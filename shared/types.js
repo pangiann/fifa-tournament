@@ -53,8 +53,6 @@
  * @property {Player[]} players
  * @property {Fixture[]} fixtures Empty until the draw.
  * @property {MatchResult[]} results Same length and order as fixtures.
- * @property {number | undefined} shortenedPlayerId
- *   Player assigned one game fewer when players × games is odd.
  * @property {number | undefined} knockoutSize 2, 4, 8, or 16; set at the draw.
  * @property {Record<string, KnockoutResult>} knockoutResults Keyed by knockout match key.
  * @property {boolean} hasThirdPlaceMatch
@@ -65,7 +63,6 @@
  * @typedef {Object} StandingsRow
  * @property {number} playerId
  * @property {string} name
- * @property {number} gamesAssigned
  * @property {number} played
  * @property {number} wins
  * @property {number} draws
@@ -74,7 +71,6 @@
  * @property {number} goalsAgainst
  * @property {number} goalDifference
  * @property {number} points
- * @property {number} pointsPerGame Points divided by gamesAssigned.
  */
 
 /**

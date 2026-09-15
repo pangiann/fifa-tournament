@@ -23,7 +23,6 @@ export const createFivePlayerTournament = (overrides = {}) => {
     players,
     fixtures,
     results: fixtures.map(() => ({ homeScore: undefined, awayScore: undefined })),
-    shortenedPlayerId: undefined,
     knockoutSize: 4,
     knockoutResults: {},
     hasThirdPlaceMatch: false,

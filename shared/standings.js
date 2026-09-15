@@ -2,11 +2,8 @@
  * The league table: points, tie-breakers, and who is already guaranteed a
  * knockout place.
  *
- * Ranking order: points per assigned game, goal difference, goals scored,
- * then head-to-head record among the players still tied. Points per game
- * equals plain points when everyone has the same number of games; it only
- * matters when one player was assigned one game fewer (see
- * Tournament.shortenedPlayerId).
+ * Ranking order: points, goal difference, goals scored, then head-to-head
+ * record among the players still tied.
  */
 
 import { isLeagueComplete, isMatchPlayed } from "./format.js";
@@ -20,7 +17,7 @@ export const POINTS_FOR_DRAW = 1;
  */
 export const computeStandings = (tournament) => {
   const rowsByPlayerId = new Map(
-    tournament.players.map((player) => [player.id, createRow(player, tournament)]),
+    tournament.players.map((player) => [player.id, createRow(player)]),
   );
   forEachPlayedMatch(tournament, (fixture, result) => {
     recordMatch(rowsByPlayerId.get(fixture.homePlayerId), result.homeScore, result.awayScore);
@@ -41,7 +38,7 @@ export const computeStandings = (tournament) => {
  * @returns {Set<number>} Player ids.
  */
 export const findGuaranteedQualifiers = (tournament, standings) => {
-  const { knockoutSize } = tournament;
+  const { knockoutSize, gamesPerPlayer } = tournament;
   if (knockoutSize === undefined) {
     return new Set();
   }
@@ -49,28 +46,23 @@ export const findGuaranteedQualifiers = (tournament, standings) => {
     return new Set(standings.slice(0, knockoutSize).map((row) => row.playerId));
   }
   const qualifiers = standings
-    .filter((row) => countThreats(row, standings) < knockoutSize)
+    .filter((row) => countThreats(row, standings, gamesPerPlayer) < knockoutSize)
     .map((row) => row.playerId);
   return new Set(qualifiers);
 };
 
-const createRow = (player, tournament) => {
-  const isShortened = tournament.shortenedPlayerId === player.id;
-  return {
-    playerId: player.id,
-    name: player.name,
-    gamesAssigned: tournament.gamesPerPlayer - (isShortened ? 1 : 0),
-    played: 0,
-    wins: 0,
-    draws: 0,
-    losses: 0,
-    goalsFor: 0,
-    goalsAgainst: 0,
-    goalDifference: 0,
-    points: 0,
-    pointsPerGame: 0,
-  };
-};
+const createRow = (player) => ({
+  playerId: player.id,
+  name: player.name,
+  played: 0,
+  wins: 0,
+  draws: 0,
+  losses: 0,
+  goalsFor: 0,
+  goalsAgainst: 0,
+  goalDifference: 0,
+  points: 0,
+});
 
 const forEachPlayedMatch = (tournament, callback) => {
   tournament.fixtures.forEach((fixture, index) => {
@@ -96,19 +88,16 @@ const recordMatch = (row, goalsFor, goalsAgainst) => {
     row.draws += 1;
     row.points += POINTS_FOR_DRAW;
   }
-  row.pointsPerGame = row.gamesAssigned > 0 ? row.points / row.gamesAssigned : 0;
 };
 
 const compareRows = (a, b) =>
-  b.pointsPerGame - a.pointsPerGame ||
+  b.points - a.points ||
   b.goalDifference - a.goalDifference ||
   b.goalsFor - a.goalsFor ||
   a.playerId - b.playerId;
 
 const areTied = (a, b) =>
-  a.pointsPerGame === b.pointsPerGame &&
-  a.goalDifference === b.goalDifference &&
-  a.goalsFor === b.goalsFor;
+  a.points === b.points && a.goalDifference === b.goalDifference && a.goalsFor === b.goalsFor;
 
 /** Re-sorts each group of tied rows by the matches played among them. */
 const breakTiesByHeadToHead = (sortedRows, tournament) => {
@@ -160,18 +149,11 @@ const recordMiniMatch = (record, goalsFor, goalsAgainst) => {
   }
 };
 
-/**
- * Counts rivals who could still finish level with or above `row`, comparing
- * the rival's best case against the row's worst case as points per assigned
- * game. Cross-multiplied to stay in exact integer arithmetic.
- */
-const countThreats = (row, standings) =>
+/** Counts rivals whose best possible finish is level with or above `row`'s current points. */
+const countThreats = (row, standings, gamesPerPlayer) =>
   standings.filter(
-    (rival) =>
-      rival.playerId !== row.playerId &&
-      rival.gamesAssigned > 0 &&
-      maxPoints(rival) * row.gamesAssigned >= row.points * rival.gamesAssigned,
+    (rival) => rival.playerId !== row.playerId && maxPoints(rival, gamesPerPlayer) >= row.points,
   ).length;
 
-const maxPoints = (row) =>
-  row.points + POINTS_FOR_WIN * Math.max(0, row.gamesAssigned - row.played);
+const maxPoints = (row, gamesPerPlayer) =>
+  row.points + POINTS_FOR_WIN * Math.max(0, gamesPerPlayer - row.played);

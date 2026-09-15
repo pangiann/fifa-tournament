@@ -16,8 +16,8 @@ describe("computeStandings", () => {
     const rows = computeStandings(createFivePlayerTournament());
     assert.equal(namesOf(rows), "ABCDE");
     assert.deepEqual(
-      rows.map((row) => [row.played, row.points, row.gamesAssigned]),
-      Array(5).fill([0, 0, 2]),
+      rows.map((row) => [row.played, row.points]),
+      Array(5).fill([0, 0]),
     );
   });
 
@@ -52,17 +52,6 @@ describe("computeStandings", () => {
     const rows = computeStandings(tournament);
     assert.equal(rows[0].name, "E");
     assert.equal(namesOf(rows).slice(1, 3), "AB", "A above B on their direct match");
-  });
-
-  it("ranks a shortened player by points per game", () => {
-    const tournament = createFivePlayerTournament({ shortenedPlayerId: E });
-    recordLeagueResult(tournament, A, B, [2, 0]);
-    recordLeagueResult(tournament, E, D, [2, 0]);
-    const rows = computeStandings(tournament);
-    assert.equal(rows[0].name, "E", "3 points from 1 assigned game beats 3 from 2");
-    assert.equal(rows[0].gamesAssigned, 1);
-    assert.equal(rows[0].pointsPerGame, 3);
-    assert.equal(rows[1].pointsPerGame, 1.5);
   });
 
   it("works with non-contiguous player ids", () => {
@@ -126,13 +115,6 @@ describe("findGuaranteedQualifiers", () => {
     const qualifiers = findGuaranteedQualifiers(tournament, computeStandings(tournament));
     assert.equal(qualifiers.size, 4);
     assert.equal(qualifiers.has(E), false, "E finished last with 0 points");
-  });
-
-  it("uses points per game for a shortened player", () => {
-    const tournament = createFivePlayerTournament({ shortenedPlayerId: E });
-    recordLeagueResult(tournament, E, D, [3, 0]); // E: perfect 3.00 from 1 game
-    const qualifiers = findGuaranteedQualifiers(tournament, computeStandings(tournament));
-    assert.equal(qualifiers.has(E), true);
   });
 
   it("returns an empty set before the draw", () => {
