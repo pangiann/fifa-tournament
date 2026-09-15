@@ -1,0 +1,9 @@
+.git
+.gitignore
+.assetsignore
+.wrangler
+wrangler.jsonc
+package.json
+src
+test
+node_modules

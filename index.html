@@ -31,27 +31,35 @@ h1{
 .stars{letter-spacing:6px;color:var(--accent2);font-size:12px;margin-bottom:4px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;backdrop-filter:blur(4px)}
 .card h2{margin:0 0 12px;font-size:15px;text-transform:uppercase;letter-spacing:2px;color:var(--accent2)}
-.card h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt)}
 .card + .card{margin-top:18px}
 .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,470px);gap:18px;align-items:start}
 @media (max-width:900px){.layout{grid-template-columns:1fr}}
-.mdgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
-.md{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px}
+.landing{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+input.txt,input.num{
+  width:100%;height:42px;padding:0 12px;font-size:15px;color:var(--txt);
+  background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:10px;outline:none;
+}
+input.num{width:110px;text-align:center;font-weight:700;font-size:16px}
+input.txt:focus,input.num:focus{border-color:var(--accent)}
+input.code{letter-spacing:4px;text-transform:uppercase;font-weight:700}
 .match{display:flex;align-items:center;gap:6px;padding:6px 4px;border-bottom:1px dashed rgba(255,255,255,.07)}
 .match:last-of-type{border-bottom:none}
 .match .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
 .match .name.away{text-align:right}
 .match .winner{color:var(--win);font-weight:700}
+.match .me{text-decoration:underline;text-decoration-color:var(--accent2);text-underline-offset:3px}
+.gnum{font-size:10px;color:var(--muted);width:34px;flex:none}
 input.score{
   width:44px;height:32px;text-align:center;font-size:15px;font-weight:700;color:var(--txt);
-  background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:8px;outline:none;
+  background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:8px;outline:none;flex:none;
 }
 input.score:focus{border-color:var(--accent)}
 input.score:disabled{opacity:.35}
 input.score::-webkit-outer-spin-button,input.score::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 input.score{-moz-appearance:textfield;appearance:textfield}
 .dash{color:var(--muted)}
-.rest{margin-top:8px;font-size:12px;color:var(--muted)}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:7px 6px;text-align:center;border-bottom:1px solid rgba(255,255,255,.06)}
 th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600}
@@ -60,9 +68,11 @@ td.pts{font-weight:800}
 tr.top4 td{background:rgba(79,140,255,.10)}
 tr.top4 td:first-child{border-left:3px solid var(--accent)}
 tr:not(.top4) td:first-child{border-left:3px solid transparent}
+.scrollbox{max-height:520px;overflow-y:auto}
 .legend{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.5}
 .chip{display:inline-block;background:rgba(79,140,255,.15);border:1px solid rgba(79,140,255,.4);color:var(--accent2);
   border-radius:999px;padding:3px 12px;font-size:12px;font-weight:600}
+.chip.warn{background:rgba(255,209,102,.12);border-color:rgba(255,209,102,.4);color:var(--gold)}
 .btn{
   background:linear-gradient(135deg,var(--accent),#3457d5);color:#fff;border:none;border-radius:999px;
   padding:11px 22px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.4px;
@@ -70,29 +80,26 @@ tr:not(.top4) td:first-child{border-left:3px solid transparent}
 .btn:hover{filter:brightness(1.12)}
 .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
 .btn.ghost:hover{color:var(--txt);border-color:var(--muted)}
-.btn.danger{background:transparent;border:1px solid rgba(255,107,129,.45);color:var(--bad)}
 .btn.small{padding:7px 14px;font-size:12px}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
-.format-row{display:flex;gap:22px;flex-wrap:wrap;margin:6px 0 4px}
-.format-row label{display:block;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
-input.num{
-  width:110px;height:42px;padding:0 12px;font-size:16px;font-weight:700;color:var(--txt);text-align:center;
-  background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:10px;outline:none;
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.topbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 18px}
+.bigcode{
+  font-size:34px;font-weight:800;letter-spacing:10px;text-align:center;padding:14px 6px;
+  background:rgba(0,0,0,.3);border:1px dashed rgba(110,231,255,.4);border-radius:12px;color:var(--accent2);
+  margin-bottom:12px;user-select:all;
 }
-input.num:focus{border-color:var(--accent)}
-.fmt-msg{margin-top:10px;font-size:13px;line-height:1.5;min-height:20px}
-.fmt-msg.good{color:var(--win)}
-.fmt-msg.bad{color:var(--bad)}
-.setup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:14px 0}
-.setup-grid input{
-  width:100%;height:42px;padding:0 12px;font-size:15px;color:var(--txt);
-  background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:10px;outline:none;
-}
-.setup-grid input:focus{border-color:var(--accent)}
-.slot{font-size:11px;color:var(--muted);margin-bottom:4px;letter-spacing:1px}
-.ko-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:6px}
-.ko-match{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px}
-.ko-match .tag{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;max-height:340px;overflow-y:auto}
+.pill{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:14px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill .gt{display:block;font-size:11px;color:var(--muted)}
+.filterbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.filterbar input.txt{flex:1;min-width:140px;height:36px}
+.toggle{cursor:pointer;user-select:none}
+.toggle.on{background:rgba(56,217,150,.15);border-color:rgba(56,217,150,.5);color:var(--win)}
+.ko-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:6px;align-items:start}
+.ko-round h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
+.ko-match{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:10px}
+.ko-match .tag{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .pens{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,.12);display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
 .locked{color:var(--muted);font-size:14px;text-align:center;padding:22px 10px}
 .champion{
@@ -101,90 +108,27 @@ input.num:focus{border-color:var(--accent)}
   border:1px solid rgba(255,209,102,.45);color:var(--gold);letter-spacing:1px;
 }
 .seed{font-size:10px;color:var(--muted);background:rgba(255,255,255,.08);border-radius:6px;padding:1px 6px;margin:0 4px}
-#ko{margin-top:18px}
 .error{color:var(--bad);font-size:13px;margin-top:8px;min-height:18px}
+.notice{
+  background:rgba(255,107,129,.08);border:1px solid rgba(255,107,129,.35);border-radius:12px;
+  padding:12px 14px;font-size:13px;line-height:1.5;margin-top:12px;
+}
+.notice .actions{margin-top:10px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="stars">✦ ✦ ✦ ✦ ✦</div>
   <h1>Champions Night</h1>
-  <div class="subtitle" id="subtitle">Swiss-style league phase · knockouts · glory</div>
+  <div class="subtitle" id="subtitle">Join with a code · league phase · knockouts · glory</div>
   <div id="app"></div>
 </div>
 
 <script>
 "use strict";
 
-var KEY = "ucl-tracker-v2";
-var MAX_PLAYERS = 40;
-var state = null;
+/* ================= pure logic (shared shape with server state) ================= */
 
-/* ---------- storage ---------- */
-function getStore(){ try { return window.localStorage; } catch(e){ return null; } }
-function saveState(){ var s=getStore(); if(s) s.setItem(KEY, JSON.stringify(state)); }
-function loadState(){
-  var s=getStore(); if(!s) return null;
-  try {
-    var raw=s.getItem(KEY);
-    var st=raw ? JSON.parse(raw) : null;
-    if(st && (!st.fixtures || !st.names || !st.league)) return null;
-    return st;
-  } catch(e){ return null; }
-}
-function emptyKo(){ return {h:null,a:null,ph:null,pa:null}; }
-function freshState(names,k){
-  var fixtures=generateFixtures(names.length,k);
-  return {
-    started:true, names:names, k:k, fixtures:fixtures,
-    league:fixtures.map(function(){ return {h:null,a:null}; }),
-    ko:{sf1:emptyKo(),sf2:emptyKo(),third:emptyKo(),final:emptyKo()}
-  };
-}
-
-/* ---------- format feasibility ---------- */
-function validateFormat(n,k){
-  if(!Number.isInteger(n)||n<2) return "You need at least 2 players.";
-  if(n>MAX_PLAYERS) return "Maximum "+MAX_PLAYERS+" players.";
-  if(!Number.isInteger(k)||k<1) return "Each player must play at least 1 game.";
-  if(k>n-1) return "Impossible: with "+n+" players, each one can face at most "+(n-1)+" different opponents. Lower the games count or add players.";
-  if((n*k)%2!==0){
-    var opts=[];
-    if(k-1>=1) opts.push((k-1)+" games");
-    if(k+1<=n-1) opts.push((k+1)+" games");
-    opts.push((n+1)+" players");
-    return "Impossible: "+n+" players × "+k+" games each = "+(n*k)+" (an odd total). Every match counts for 2 players, so the total must be even — someone would always be left one game short. Try "+opts.join(" or ")+".";
-  }
-  return null;
-}
-
-/* ---------- fixture generation ----------
-   Builds a K-regular pairing on N players (circulant construction:
-   everyone plays neighbours at distances 1..K/2 around a circle, plus
-   the player directly opposite when K is odd — K odd forces N even).
-   Then greedily groups matches into matchdays so nobody plays twice
-   on the same matchday. Randomness comes from shuffling names onto
-   circle positions at the draw. */
-function generateFixtures(n,k){
-  if(validateFormat(n,k)) throw new Error("invalid format "+n+"/"+k);
-  var edges=[],i,s;
-  var m=Math.floor(k/2);
-  for(s=1;s<=m;s++) for(i=0;i<n;i++) edges.push([i,(i+s)%n]);
-  if(k%2===1){ var half=n/2; for(i=0;i<half;i++) edges.push([i,i+half]); }
-  var rounds=[]; // per matchday: set of busy players
-  var fixtures=[];
-  edges.forEach(function(e){
-    var r=0;
-    while(r<rounds.length && (rounds[r][e[0]]||rounds[r][e[1]])) r++;
-    if(r===rounds.length) rounds.push({});
-    rounds[r][e[0]]=true; rounds[r][e[1]]=true;
-    fixtures.push({md:r+1,h:e[0],a:e[1]});
-  });
-  fixtures.sort(function(x,y){ return x.md-y.md; });
-  return fixtures;
-}
-
-/* ---------- pure logic ---------- */
 function parseScore(v){
   if(v==null) return null;
   v=String(v).trim();
@@ -193,44 +137,54 @@ function parseScore(v){
   if(isNaN(n)||n<0) return null;
   return Math.min(n,99);
 }
-function playedCount(){
-  return state.league.filter(function(m){ return m.h!=null && m.a!=null; }).length;
+function leagueCompleteT(t){
+  return t.results.length>0 && t.results.every(function(r){ return r.h!=null&&r.a!=null; });
 }
-function leagueComplete(){ return playedCount()===state.fixtures.length; }
-function qualCount(){ return state.names.length>=4 ? 4 : 2; }
-
-function computeStandings(){
-  var n=state.names.length;
-  var rows=[];
-  for(var i=0;i<n;i++) rows.push({id:i,name:state.names[i],p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0});
-  state.fixtures.forEach(function(f,idx){
-    var m=state.league[idx];
-    if(m.h==null||m.a==null) return;
+function clientValidateDraw(n,k){
+  if(n<2) return "You need at least 2 players to draw.";
+  if(!(k>=1)) return "Games per player must be at least 1.";
+  if(k>n-1) return "With "+n+" players, each one can face at most "+(n-1)+" different opponents.";
+  if((n*k)%2===1) return n+" players × "+k+" games each is an odd total — impossible exactly.";
+  return null;
+}
+/* standings ranked by points per assigned game, so a one-game-short player
+   is compared fairly. With no exempt player this orders identically to points. */
+function standingsOf(t){
+  var rows=t.players.map(function(p){
+    return {id:p.id,name:p.name,assigned:t.k-(t.exempt===p.id?1:0),
+            p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0,avg:0};
+  });
+  function apply(map,f,m){
+    map[f.h].gf+=m.h; map[f.h].gd+=m.h-m.a;
+    map[f.a].gf+=m.a; map[f.a].gd+=m.a-m.h;
+    if(m.h>m.a) map[f.h].pts+=3;
+    else if(m.a>m.h) map[f.a].pts+=3;
+    else {map[f.h].pts++;map[f.a].pts++;}
+  }
+  t.fixtures.forEach(function(f,i){
+    var m=t.results[i];
+    if(!m||m.h==null||m.a==null) return;
     var H=rows[f.h],A=rows[f.a];
     H.p++;A.p++; H.gf+=m.h;H.ga+=m.a; A.gf+=m.a;A.ga+=m.h;
     if(m.h>m.a){H.w++;H.pts+=3;A.l++;}
     else if(m.a>m.h){A.w++;A.pts+=3;H.l++;}
     else {H.d++;A.d++;H.pts++;A.pts++;}
   });
-  rows.forEach(function(r){ r.gd=r.gf-r.ga; });
-  rows.sort(function(a,b){ return b.pts-a.pts || b.gd-a.gd || b.gf-a.gf || a.id-b.id; });
-  /* head-to-head mini-table inside groups tied on pts+gd+gf */
+  rows.forEach(function(r){ r.gd=r.gf-r.ga; r.avg=r.assigned>0?r.pts/r.assigned:0; });
+  rows.sort(function(a,b){ return b.avg-a.avg || b.gd-a.gd || b.gf-a.gf || a.id-b.id; });
+  /* head-to-head mini-table inside tied groups */
   var out=[],i2=0;
   while(i2<rows.length){
     var j=i2+1;
-    while(j<rows.length && rows[j].pts===rows[i2].pts && rows[j].gd===rows[i2].gd && rows[j].gf===rows[i2].gf) j++;
+    while(j<rows.length && rows[j].avg===rows[i2].avg && rows[j].gd===rows[i2].gd && rows[j].gf===rows[i2].gf) j++;
     var group=rows.slice(i2,j);
     if(group.length>1){
       var ids={}; group.forEach(function(r){ ids[r.id]={pts:0,gd:0,gf:0}; });
-      state.fixtures.forEach(function(f,idx){
-        var m=state.league[idx];
-        if(m.h==null||m.a==null) return;
+      t.fixtures.forEach(function(f,i){
+        var m=t.results[i];
+        if(!m||m.h==null||m.a==null) return;
         if(!(f.h in ids)||!(f.a in ids)) return;
-        ids[f.h].gf+=m.h; ids[f.h].gd+=m.h-m.a;
-        ids[f.a].gf+=m.a; ids[f.a].gd+=m.a-m.h;
-        if(m.h>m.a) ids[f.h].pts+=3;
-        else if(m.a>m.h) ids[f.a].pts+=3;
-        else {ids[f.h].pts++;ids[f.a].pts++;}
+        apply(ids,f,m);
       });
       group.sort(function(a,b){
         var A=ids[a.id],B=ids[b.id];
@@ -248,18 +202,118 @@ function koWinnerSide(m){
   if(m.ph!=null&&m.pa!=null&&m.ph!==m.pa) return m.ph>m.pa?"h":"a";
   return null;
 }
-function anyResults(){
-  if(!state) return false;
-  var lg=state.league.some(function(m){ return m.h!=null||m.a!=null; });
-  var ko=Object.keys(state.ko).some(function(k){
-    var m=state.ko[k]; return m.h!=null||m.a!=null||m.ph!=null||m.pa!=null;
-  });
-  return lg||ko;
+/* standard bracket seeding order: 1 and 2 can only meet in the final */
+function bracketOrder(S){
+  var o=[1,2];
+  while(o.length<S){
+    var next=[],m=o.length*2+1;
+    o.forEach(function(s){ next.push(s,m-s); });
+    o=next;
+  }
+  return o;
+}
+function roundNames(S){
+  return {16:["Round of 16","Quarter-finals","Semi-finals","Final"],
+          8:["Quarter-finals","Semi-finals","Final"],
+          4:["Semi-finals","Final"],
+          2:["Final"]}[S];
+}
+function matchTag(S,r,mi){
+  var short={16:["R16","QF","SF","F"],8:["QF","SF","F"],4:["SF","F"],2:["F"]}[S][r];
+  return (S>>(r+1))>1 ? short+(mi+1) : short;
+}
+function koMatchWinner(m){
+  if(m.home==null||m.away==null) return null;
+  var s=koWinnerSide(m.scores);
+  return s ? (s==="h"?m.home:m.away) : null;
+}
+/* resolves the whole bracket from standings + stored knockout scores */
+function koRoundsOf(t){
+  var S=t.koSize;
+  var seeds=standingsOf(t).slice(0,S).map(function(r){ return r.id; });
+  var order=bracketOrder(S);
+  var names=roundNames(S);
+  var rounds=[],prev=null;
+  for(var r=0;r<names.length;r++){
+    var count=S>>(r+1),matches=[];
+    for(var mi=0;mi<count;mi++){
+      var key="r"+r+"m"+mi;
+      var sc=t.ko[key]||{h:null,a:null,ph:null,pa:null};
+      var home,away,ph1=null,ph2=null;
+      if(r===0){ home=seeds[order[2*mi]-1]; away=seeds[order[2*mi+1]-1]; }
+      else{
+        home=koMatchWinner(prev[2*mi]); away=koMatchWinner(prev[2*mi+1]);
+        ph1="Winner "+prev[2*mi].tag; ph2="Winner "+prev[2*mi+1].tag;
+      }
+      matches.push({key:key,tag:matchTag(S,r,mi),home:home,away:away,ph1:ph1,ph2:ph2,scores:sc});
+    }
+    rounds.push({name:names[r],matches:matches});
+    prev=matches;
+  }
+  return rounds;
+}
+function championOf(t){
+  var rounds=koRoundsOf(t);
+  return koMatchWinner(rounds[rounds.length-1].matches[0]);
 }
 
-/* ---------- DOM helpers ---------- */
+/* ================= app state ================= */
+
+var T=null;          // tournament public state (from server)
+var code=null;       // active code
+var session=null;    // {token, playerId, name} for this device
+var ws=null, wsTimer=null, wsPing=null, wsDown=false;
+var drawError=null;  // last draw rejection, shown in lobby
+var filterText="", onlyMine=false;
+var landingError={create:"",join:""};
+
+function loadSession(c){
+  try{ var raw=localStorage.getItem("mp-sess-"+c); return raw?JSON.parse(raw):null; }catch(e){ return null; }
+}
+function saveSession(c,s){
+  try{ localStorage.setItem("mp-sess-"+c,JSON.stringify(s)); }catch(e){}
+}
+async function api(path,body){
+  try{
+    var res=await fetch(path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body||{})});
+    var data=null; try{ data=await res.json(); }catch(e){}
+    return {ok:res.ok,status:res.status,data:data||{}};
+  }catch(e){
+    return {ok:false,status:0,data:{message:"Network error — are you online?"}};
+  }
+}
+
+/* ================= websocket live sync ================= */
+
+function connect(){
+  if(ws){ try{ ws.onclose=null; ws.close(); }catch(e){} ws=null; }
+  clearInterval(wsPing);
+  var proto=location.protocol==="https:"?"wss":"ws";
+  ws=new WebSocket(proto+"://"+location.host+"/api/t/"+code+"/ws");
+  ws.onopen=function(){
+    if(wsDown){ wsDown=false; render(); }
+    /* keepalive so idle connections aren't dropped */
+    wsPing=setInterval(function(){ try{ ws.send("ping"); }catch(e){} },20000);
+  };
+  ws.onmessage=function(ev){
+    if(ev.data==="pong") return;
+    try{
+      var msg=JSON.parse(ev.data);
+      if(msg.type==="state"){ T=msg.t; wsDown=false; render(); }
+    }catch(e){}
+  };
+  ws.onclose=function(){
+    wsDown=true; render();
+    clearInterval(wsPing);
+    clearTimeout(wsTimer);
+    wsTimer=setTimeout(connect,2000);
+  };
+}
+
+/* ================= DOM helpers ================= */
+
 function $(sel){ return document.querySelector(sel); }
-function el(tag, attrs){
+function el(tag,attrs){
   var n=document.createElement(tag);
   attrs=attrs||{};
   Object.keys(attrs).forEach(function(k){
@@ -276,328 +330,366 @@ function el(tag, attrs){
   }
   return n;
 }
-function scoreInput(val, opts){
-  var i=el("input",{class:"score",type:"number",min:"0",max:"99",inputmode:"numeric"});
-  i.value = (val==null?"":val);
+function scoreInput(val,fkey,opts){
+  var i=el("input",{class:"score",type:"number",min:"0",max:"99",inputmode:"numeric","data-fkey":fkey});
+  i.value=(val==null?"":val);
   if(opts.disabled) i.disabled=true;
   if(opts.oninput) i.addEventListener("input",opts.oninput);
-  if(opts.onchange) i.addEventListener("change",opts.onchange);
   return i;
 }
-
-/* ---------- setup screen ---------- */
-function showSetup(editMode){
-  var app=$("#app"); app.innerHTML="";
-  var locked = editMode && anyResults();
-  var nameValues = (state && state.names) ? state.names.slice() : [];
-
-  var card=el("div",{class:"card"});
-  card.append(el("h2",{},editMode?"Edit player names":"Tournament format"));
-
-  var countInput=el("input",{class:"num",type:"number",min:"2",max:String(MAX_PLAYERS),step:"1"});
-  var gamesInput=el("input",{class:"num",type:"number",min:"1",step:"1"});
-  countInput.value = editMode ? state.names.length : 9;
-  gamesInput.value = editMode ? state.k : 4;
-  var fmtMsg=el("div",{class:"fmt-msg"});
-
-  if(editMode){
-    card.append(el("div",{class:"legend"},
-      "Format is locked once the tournament is created: ",
-      state.names.length+" players · "+state.k+" games each. ",
-      locked ? "Results already exist, so slots are fixed — you can only rename players."
-             : "You can rename players, or re-draw the slots."));
-  } else {
-    var row=el("div",{class:"format-row"},
-      el("div",{},el("label",{},"Players"),countInput),
-      el("div",{},el("label",{},"Games per player"),gamesInput));
-    card.append(row,fmtMsg);
+/* full re-render keeps code simple; this preserves the focused input across it */
+function render(){
+  var active=document.activeElement;
+  var fkey=active&&active.getAttribute?active.getAttribute("data-fkey"):null;
+  var val=fkey?active.value:null;
+  doRender();
+  if(fkey){
+    var again=document.querySelector('[data-fkey="'+fkey+'"]');
+    if(again){ again.value=val; again.focus(); }
   }
-
-  function currentFormat(){
-    return { n:parseInt(countInput.value,10), k:parseInt(gamesInput.value,10) };
-  }
-  function checkFormat(){
-    var f=currentFormat();
-    var err=validateFormat(f.n,f.k);
-    if(err){ fmtMsg.className="fmt-msg bad"; fmtMsg.textContent="✗ "+err; return false; }
-    fmtMsg.className="fmt-msg good";
-    fmtMsg.textContent="✓ "+f.n+" players × "+f.k+" games each → "+(f.n*f.k/2)+" league matches, top "+
-      (f.n>=4?"4 advance to the semi-finals.":"2 meet in the final.");
-    return true;
-  }
-
-  /* players */
-  var pcard = editMode ? card : el("div",{class:"card"});
-  if(!editMode) pcard.append(el("h2",{},"Players"));
-  pcard.append(el("div",{class:"legend"},
-    editMode ? "" :
-    "Slot numbers decide the fixtures, so either use the random draw (recommended) or agree on the order yourselves."));
-  var grid=el("div",{class:"setup-grid"});
-  pcard.append(grid);
-  var err=el("div",{class:"error"});
-  pcard.append(err);
-
-  var inputs=[];
-  function renderNameGrid(){
-    var n = editMode ? state.names.length : (parseInt(countInput.value,10)||0);
-    n=Math.max(0,Math.min(MAX_PLAYERS,n));
-    grid.innerHTML=""; inputs=[];
-    for(var i=0;i<n;i++){
-      (function(i){
-        var inp=el("input",{type:"text",maxlength:"20",placeholder:"Player "+(i+1),
-          oninput:function(){ nameValues[i]=inp.value; }});
-        inp.value = nameValues[i]||"";
-        inputs.push(inp);
-        grid.append(el("div",{},el("div",{class:"slot"},"SLOT "+(i+1)),inp));
-      })(i);
-    }
-  }
-
-  if(!editMode){
-    countInput.addEventListener("input",function(){ checkFormat(); renderNameGrid(); });
-    gamesInput.addEventListener("input",checkFormat);
-    checkFormat();
-  }
-  renderNameGrid();
-
-  function readNames(){
-    if(!editMode && !checkFormat()){ err.textContent="Fix the format first."; return null; }
-    var names=inputs.map(function(x){ return x.value.trim(); });
-    if(names.some(function(nm){ return nm===""; })){ err.textContent="All names are required."; return null; }
-    var lower=names.map(function(nm){ return nm.toLowerCase(); });
-    if(new Set(lower).size!==names.length){ err.textContent="Names must be unique."; return null; }
-    err.textContent="";
-    return names;
-  }
-  function commit(names){
-    if(editMode && state){ state.names=names; }
-    else { state=freshState(names,currentFormat().k); }
-    saveState(); buildMain();
-  }
-  function shuffle(arr){
-    for(var i=arr.length-1;i>0;i--){
-      var j=Math.floor(Math.random()*(i+1));
-      var t=arr[i];arr[i]=arr[j];arr[j]=t;
-    }
-    return arr;
-  }
-
-  var actions=el("div",{class:"actions"});
-  if(!locked){
-    actions.append(el("button",{class:"btn",onclick:function(){
-      var names=readNames(); if(!names) return;
-      commit(shuffle(names));
-    }},"🎲 Random draw & start"));
-  }
-  actions.append(el("button",{class:locked?"btn":"btn ghost",onclick:function(){
-    var names=readNames(); if(!names) return;
-    commit(names);
-  }},editMode?"Save names":"Start with this order"));
-  if(editMode){
-    actions.append(el("button",{class:"btn ghost",onclick:buildMain},"Cancel"));
-  }
-  pcard.append(actions);
-
-  app.append(card);
-  if(!editMode) app.append(pcard);
 }
 
-/* ---------- main screen ---------- */
-function buildMain(){
+/* ================= views ================= */
+
+function doRender(){
   var app=$("#app"); app.innerHTML="";
-  var n=state.names.length;
-  $("#subtitle").textContent = n+" players · league phase of "+state.k+" games each · top "+qualCount()+
-    (qualCount()===4?" to the semi-finals":" to the final");
+  if(!code||!T){ renderLanding(app); return; }
+  $("#subtitle").textContent=T.players.length+" players · "+T.k+" games each · top "+koSizeDisplay(T)+" advance";
+  if(T.phase==="lobby") renderLobby(app);
+  else renderTournament(app);
+}
+/* koSize is null until the draw; show the projected size before it */
+function projectedKoSize(n){ if(n>60) return 16; if(n>=20) return 8; if(n>=4) return 4; return 2; }
 
-  var actions=el("div",{class:"actions"},
-    el("button",{class:"btn ghost small",onclick:function(){ showSetup(true); }},"✏️ Edit names"),
-    el("button",{class:"btn danger small",onclick:function(){
-      if(confirm("Reset the whole tournament? All results will be lost.")){
-        var s=getStore(); if(s) s.removeItem(KEY);
-        state=null;
-        $("#subtitle").textContent="Swiss-style league phase · knockouts · glory";
-        showSetup(false);
-      }
-    }},"Reset tournament")
+function renderLanding(app){
+  var name=el("input",{class:"txt",type:"text",maxlength:"20",placeholder:"Your name"});
+  var gt=el("input",{class:"txt",type:"text",maxlength:"20",placeholder:"PSN / Xbox gamertag (optional)"});
+  var k=el("input",{class:"num",type:"number",min:"1",step:"1"}); k.value=4;
+  var cerr=el("div",{class:"error"},landingError.create);
+
+  var jcode=el("input",{class:"txt code",type:"text",maxlength:"6",placeholder:"ABC123"});
+  var jname=el("input",{class:"txt",type:"text",maxlength:"20",placeholder:"Your name"});
+  var jgt=el("input",{class:"txt",type:"text",maxlength:"20",placeholder:"Gamertag (optional)"});
+  var jerr=el("div",{class:"error"},landingError.join);
+  landingError={create:"",join:""};
+
+  var grid=el("div",{class:"landing"},
+    el("div",{class:"card"},
+      el("h2",{},"Create a tournament"),
+      el("div",{class:"field"},el("label",{},"Your name"),name),
+      el("div",{class:"field"},el("label",{},"Gamertag"),gt),
+      el("div",{class:"field"},el("label",{},"Games per player (changeable until the draw)"),k),
+      el("div",{class:"actions"},el("button",{class:"btn",onclick:async function(){
+        var r=await api("/api/create",{name:name.value,gamertag:gt.value,k:parseInt(k.value,10)});
+        if(!r.ok){ cerr.textContent=r.data.message||"Could not create."; return; }
+        saveSession(r.data.code,{token:r.data.token,playerId:r.data.playerId,name:name.value.trim()});
+        location.hash="#/t/"+r.data.code;
+      }},"Create & get a code")),
+      cerr),
+    el("div",{class:"card"},
+      el("h2",{},"Join with a code"),
+      el("div",{class:"field"},el("label",{},"Tournament code"),jcode),
+      el("div",{class:"field"},el("label",{},"Your name"),jname),
+      el("div",{class:"field"},el("label",{},"Gamertag"),jgt),
+      el("div",{class:"actions"},
+        el("button",{class:"btn",onclick:async function(){
+          var c=jcode.value.trim().toUpperCase();
+          if(!/^[A-Z0-9]{6}$/.test(c)){ jerr.textContent="Codes are 6 letters/digits."; return; }
+          var r=await api("/api/t/"+c+"/join",{name:jname.value,gamertag:jgt.value});
+          if(!r.ok){ jerr.textContent=r.data.message||"Could not join."; return; }
+          saveSession(c,{token:r.data.token,playerId:r.data.playerId,name:jname.value.trim()});
+          location.hash="#/t/"+c;
+        }},"Join as player"),
+        el("button",{class:"btn ghost",onclick:function(){
+          var c=jcode.value.trim().toUpperCase();
+          if(!/^[A-Z0-9]{6}$/.test(c)){ jerr.textContent="Codes are 6 letters/digits."; return; }
+          location.hash="#/t/"+c;
+        }},"Watch only")),
+      jerr)
   );
-  app.append(actions);
+  app.append(grid);
+  $("#subtitle").textContent="Join with a code · league phase · knockouts · glory";
+}
 
-  var layout=el("div",{class:"layout"});
+function topbar(){
+  var bar=el("div",{class:"topbar"});
+  bar.append(el("span",{class:"chip"},"Code: "+code));
+  if(session) bar.append(el("span",{class:"chip"},"Playing as "+session.name));
+  else bar.append(el("span",{class:"chip"},"👀 Spectating"));
+  if(wsDown) bar.append(el("span",{class:"chip warn"},"reconnecting…"));
+  bar.append(el("button",{class:"btn ghost small",onclick:function(){
+    var link=location.origin+"/#/t/"+code;
+    if(navigator.clipboard) navigator.clipboard.writeText(link);
+  }},"Copy invite link"));
+  bar.append(el("button",{class:"btn ghost small",onclick:function(){
+    location.hash="";
+  }},"Exit"));
+  return bar;
+}
 
-  /* fixtures */
-  var fx=el("div",{class:"card"});
-  fx.append(el("h2",{},"League phase"));
-  var mdgrid=el("div",{class:"mdgrid"});
-  var maxMd=state.fixtures.reduce(function(mx,f){ return Math.max(mx,f.md); },0);
-  for(var md=1;md<=maxMd;md++){
-    var box=el("div",{class:"md"});
-    box.append(el("h3",{},"Matchday "+md));
-    var playing={};
-    state.fixtures.forEach(function(f,idx){
-      if(f.md!==md) return;
-      playing[f.h]=1; playing[f.a]=1;
-      box.append(matchRow(idx,f));
-    });
-    var resting=[];
-    for(var p=0;p<n;p++) if(!playing[p]) resting.push(state.names[p]);
-    if(resting.length) box.append(el("div",{class:"rest"},"Resting: "+resting.join(", ")));
-    mdgrid.append(box);
+function renderLobby(app){
+  app.append(topbar());
+  var card=el("div",{class:"card"});
+  card.append(el("h2",{},"Lobby — waiting for players"));
+  card.append(el("div",{class:"bigcode"},code));
+  card.append(el("div",{class:"legend"},
+    "Share the code or the invite link. Players join from their own phone or laptop. ",
+    T.players.length+" / "+T.maxPlayers+" joined."));
+
+  var list=el("div",{class:"plist"});
+  T.players.forEach(function(p){
+    list.append(el("div",{class:"pill"},
+      p.name+(p.id===T.hostId?" 👑":""),
+      p.gamertag?el("span",{class:"gt"},"🎮 "+p.gamertag):null));
+  });
+  card.append(list);
+
+  /* join form for visitors who haven't joined yet */
+  if(!session){
+    var jn=el("input",{class:"txt",type:"text",maxlength:"20",placeholder:"Your name","data-fkey":"joinname"});
+    var jg=el("input",{class:"txt",type:"text",maxlength:"20",placeholder:"Gamertag (optional)","data-fkey":"joingt"});
+    var jerr=el("div",{class:"error"});
+    card.append(el("div",{class:"notice"},
+      "You're watching. Join before the draw to play:",
+      el("div",{class:"field"},jn),el("div",{class:"field"},jg),
+      el("div",{class:"actions"},el("button",{class:"btn",onclick:async function(){
+        var r=await api("/api/t/"+code+"/join",{name:jn.value,gamertag:jg.value});
+        if(!r.ok){ jerr.textContent=r.data.message||"Could not join."; return; }
+        session={token:r.data.token,playerId:r.data.playerId,name:jn.value.trim()};
+        saveSession(code,session);
+        render();
+      }},"Join as player")),
+      jerr));
   }
-  fx.append(mdgrid);
+
+  /* host controls */
+  if(session&&session.playerId===T.hostId){
+    var n=T.players.length;
+    var kin=el("input",{class:"num",type:"number",min:"1",step:"1","data-fkey":"kin",
+      oninput:function(){ hint.textContent=hintText(); }});
+    kin.value=T.k;
+    function hintText(){
+      var k=parseInt(kin.value,10);
+      var v=clientValidateDraw(n,k);
+      return v ? "✗ "+v : "✓ "+n+" players × "+k+" games → "+(n*k/2)+" league games, top "+projectedKoSize(n)+" advance.";
+    }
+    var hint=el("div",{class:"legend"},hintText());
+    var host=el("div",{class:"card"},
+      el("h2",{},"Host controls"),
+      el("div",{class:"field"},el("label",{},"Games per player"),kin),
+      hint,
+      el("div",{class:"actions"},el("button",{class:"btn",onclick:function(){ doDraw({k:parseInt(kin.value,10)}); }},"🎲 Draw & start")));
+    if(drawError){
+      var panel=el("div",{class:"notice"},drawError.message||"The draw is not possible.");
+      var acts=el("div",{class:"actions"});
+      if(drawError.error==="parity"){
+        var kNow=drawError.k;
+        if(kNow-1>=1) acts.append(el("button",{class:"btn small",onclick:function(){ kin.value=kNow-1; doDraw({k:kNow-1}); }},"Play "+(kNow-1)+" games"));
+        if(kNow+1<=n-1) acts.append(el("button",{class:"btn small",onclick:function(){ kin.value=kNow+1; doDraw({k:kNow+1}); }},"Play "+(kNow+1)+" games"));
+        acts.append(el("button",{class:"btn small ghost",onclick:function(){ doDraw({k:kNow,acceptExempt:true}); }},"One random player plays "+(kNow-1)));
+        acts.append(el("button",{class:"btn small ghost",onclick:function(){ drawError=null; render(); }},"Wait for more players"));
+      } else {
+        acts.append(el("button",{class:"btn small ghost",onclick:function(){ drawError=null; render(); }},"OK"));
+      }
+      panel.append(acts);
+      host.append(panel);
+    }
+    app.append(card,host);
+  } else {
+    card.append(el("div",{class:"legend"},"Waiting for the host to run the draw…"));
+    app.append(card);
+  }
+}
+async function doDraw(extra){
+  var body={token:session.token};
+  Object.keys(extra).forEach(function(k){ body[k]=extra[k]; });
+  var r=await api("/api/t/"+code+"/draw",body);
+  drawError=r.ok?null:r.data;
+  if(!r.ok) render(); /* success re-renders via broadcast */
+}
+
+function renderTournament(app){
+  app.append(topbar());
+  var layout=el("div",{class:"layout"});
+  var canEdit=!!session;
+
+  /* game list */
+  var fx=el("div",{class:"card"});
+  fx.append(el("h2",{},"League games ",el("span",{class:"chip"},
+    T.results.filter(function(r){return r.h!=null&&r.a!=null;}).length+" / "+T.fixtures.length+" played")));
+  var search=el("input",{class:"txt",type:"text",placeholder:"Filter by player…","data-fkey":"filter",
+    oninput:function(){ filterText=search.value; render(); }});
+  search.value=filterText;
+  var bar=el("div",{class:"filterbar"},search);
+  if(session){
+    bar.append(el("span",{class:"chip toggle"+(onlyMine?" on":""),onclick:function(){ onlyMine=!onlyMine; render(); }},"My games"));
+  }
+  fx.append(bar);
+  var listBox=el("div",{class:"scrollbox"});
+  var ft=filterText.trim().toLowerCase();
+  T.fixtures.forEach(function(f,i){
+    if(onlyMine&&session&&f.h!==session.playerId&&f.a!==session.playerId) return;
+    if(ft){
+      var hn=T.players[f.h].name.toLowerCase(),an=T.players[f.a].name.toLowerCase();
+      if(hn.indexOf(ft)<0&&an.indexOf(ft)<0) return;
+    }
+    listBox.append(gameRow(i,f,canEdit));
+  });
+  fx.append(listBox);
+  if(T.exempt!=null){
+    fx.append(el("div",{class:"legend"},"° "+T.players[T.exempt].name+" plays one game fewer (odd draw) — the table ranks by points per game."));
+  }
   layout.append(fx);
 
   /* standings */
   var st=el("div",{class:"card"});
-  st.append(el("h2",{},"Standings ",el("span",{class:"chip",id:"progress"},"")));
-  var tbl=el("table",{},
-    el("thead",{},el("tr",{},
-      el("th",{},"#"),el("th",{class:"pname"},"Player"),
-      el("th",{},"P"),el("th",{},"W"),el("th",{},"D"),el("th",{},"L"),
-      el("th",{},"GF"),el("th",{},"GA"),el("th",{},"GD"),el("th",{},"Pts"))),
-    el("tbody",{id:"tbody"})
-  );
-  st.append(tbl);
+  st.append(el("h2",{},"Standings"));
+  var showAvg=T.exempt!=null;
+  var head=el("tr",{},el("th",{},"#"),el("th",{class:"pname"},"Player"),
+    el("th",{},"P"),el("th",{},"W"),el("th",{},"D"),el("th",{},"L"),
+    el("th",{},"GF"),el("th",{},"GA"),el("th",{},"GD"),el("th",{},"Pts"));
+  if(showAvg) head.append(el("th",{},"Avg"));
+  var tbody=el("tbody",{});
+  var q=T.koSize;
+  standingsOf(T).forEach(function(r,i){
+    var tr=el("tr",{class:i<q?"top4":""},
+      el("td",{},String(i+1)),
+      el("td",{class:"pname"},r.name+(T.exempt===r.id?" °":"")),
+      el("td",{},String(r.p)),el("td",{},String(r.w)),el("td",{},String(r.d)),el("td",{},String(r.l)),
+      el("td",{},String(r.gf)),el("td",{},String(r.ga)),el("td",{},String(r.gd)),
+      el("td",{class:"pts"},String(r.pts)));
+    if(showAvg) tr.append(el("td",{},r.avg.toFixed(2)));
+    tbody.append(tr);
+  });
+  st.append(el("div",{class:"scrollbox"},el("table",{},el("thead",{},head),tbody)));
   st.append(el("div",{class:"legend"},
-    qualCount()===4
-      ? "Top 4 advance to the semi-finals (1st vs 4th, 2nd vs 3rd). "
-      : "Top 2 meet in the final. ",
-    "Tie-breakers: points → goal difference → goals scored → head-to-head."));
+    "Top "+q+" advance. Tie-breakers: "+(showAvg?"points per game":"points")+" → goal difference → goals scored → head-to-head."));
   layout.append(st);
   app.append(layout);
 
   /* knockout */
-  app.append(el("div",{class:"card",id:"ko"}));
-
-  refreshStandings();
-  renderKO();
-}
-
-function matchRow(idx,f){
-  var m=state.league[idx];
-  var hName=el("span",{class:"name"},state.names[f.h]);
-  var aName=el("span",{class:"name away"},state.names[f.a]);
-  function paint(){
-    hName.classList.toggle("winner", m.h!=null&&m.a!=null&&m.h>m.a);
-    aName.classList.toggle("winner", m.h!=null&&m.a!=null&&m.a>m.h);
-  }
-  var hi=scoreInput(m.h,{oninput:function(){ m.h=parseScore(hi.value); saveState(); paint(); refreshStandings(); renderKO(); }});
-  var ai=scoreInput(m.a,{oninput:function(){ m.a=parseScore(ai.value); saveState(); paint(); refreshStandings(); renderKO(); }});
-  paint();
-  return el("div",{class:"match"},hName,hi,el("span",{class:"dash"},"–"),ai,aName);
-}
-
-function refreshStandings(){
-  var tbody=$("#tbody"); if(!tbody) return;
-  tbody.innerHTML="";
-  var q=qualCount();
-  computeStandings().forEach(function(r,i){
-    var tr=el("tr",{class:i<q?"top4":""},
-      el("td",{},String(i+1)),
-      el("td",{class:"pname"},r.name),
-      el("td",{},String(r.p)),el("td",{},String(r.w)),el("td",{},String(r.d)),el("td",{},String(r.l)),
-      el("td",{},String(r.gf)),el("td",{},String(r.ga)),el("td",{},String(r.gd)),
-      el("td",{class:"pts"},String(r.pts))
-    );
-    tbody.append(tr);
-  });
-  var prog=$("#progress");
-  if(prog) prog.textContent = playedCount()+" / "+state.fixtures.length+" played";
-}
-
-/* ---------- knockout ---------- */
-function renderKO(){
-  var box=$("#ko"); if(!box) return;
-  box.innerHTML="";
-  box.append(el("h2",{},"Knockout stage"));
-
-  if(!leagueComplete()){
-    box.append(el("div",{class:"locked"},
-      "🔒 Finish all league matches to unlock the knockout stage ("+playedCount()+" / "+state.fixtures.length+" played)."));
-    return;
-  }
-
-  var seeds=computeStandings().map(function(r){ return r.id; });
-  var grid=el("div",{class:"ko-grid"});
-  var finalPair, champ;
-
-  function winnerOf(key,pair){
-    if(pair.home==null||pair.away==null) return null;
-    var side=koWinnerSide(state.ko[key]);
-    return side ? (side==="h"?pair.home:pair.away) : null;
-  }
-  function loserOf(key,pair){
-    if(pair.home==null||pair.away==null) return null;
-    var side=koWinnerSide(state.ko[key]);
-    return side ? (side==="h"?pair.away:pair.home) : null;
-  }
-
-  if(qualCount()===4){
-    var sf1={home:seeds[0],away:seeds[3]};
-    var sf2={home:seeds[1],away:seeds[2]};
-    grid.append(koCard("sf1","Semi-final 1",sf1,{hs:"1",as:"4"}));
-    grid.append(koCard("sf2","Semi-final 2",sf2,{hs:"2",as:"3"}));
-    finalPair={home:winnerOf("sf1",sf1),away:winnerOf("sf2",sf2)};
-    var thirdPair={home:loserOf("sf1",sf1),away:loserOf("sf2",sf2)};
-    grid.append(koCard("final","🏆 Final",finalPair,null,"Winner SF1","Winner SF2"));
-    grid.append(koCard("third","3rd place (optional)",thirdPair,null,"Loser SF1","Loser SF2"));
+  var ko=el("div",{class:"card"});
+  ko.append(el("h2",{},"Knockout stage"));
+  if(!leagueCompleteT(T)){
+    ko.append(el("div",{class:"locked"},"🔒 Finish all league games to unlock the knockout stage."));
   } else {
-    finalPair={home:seeds[0],away:seeds[1]};
-    grid.append(koCard("final","🏆 Final",finalPair,{hs:"1",as:"2"}));
+    var grid=el("div",{class:"ko-grid"});
+    var standing=standingsOf(T);
+    var seedPos={}; standing.forEach(function(r,i){ seedPos[r.id]=i+1; });
+    koRoundsOf(T).forEach(function(round,r){
+      var col=el("div",{class:"ko-round"},el("h3",{},round.name));
+      round.matches.forEach(function(m){
+        col.append(koCard(m,r===0?seedPos:null,canEdit));
+      });
+      grid.append(col);
+    });
+    ko.append(grid);
+    var champ=championOf(T);
+    if(champ!=null) ko.append(el("div",{class:"champion"},"🏆 "+T.players[champ].name+" is the champion! 🏆"));
   }
-  box.append(grid);
-
-  champ=winnerOf("final",finalPair);
-  if(champ!=null){
-    box.append(el("div",{class:"champion"},"🏆 "+state.names[champ]+" is the champion! 🏆"));
-  }
+  if(!canEdit) ko.append(el("div",{class:"legend"},"Spectator mode — results are entered by the players."));
+  app.append(ko);
 }
 
-function koCard(key,title,pair,seedLabels,phHome,phAway){
-  var m=state.ko[key];
-  var ready = pair.home!=null && pair.away!=null;
-  var hLabel = ready ? state.names[pair.home] : (phHome||"TBD");
-  var aLabel = ready ? state.names[pair.away] : (phAway||"TBD");
+function nameSpan(id,placeholder,away,winner){
+  var cls="name"+(away?" away":"")+(winner?" winner":"");
+  if(session&&id===session.playerId) cls+=" me";
+  var label=id!=null?T.players[id].name:(placeholder||"TBD");
+  var s=el("span",{class:cls},label);
+  if(id!=null&&T.players[id].gamertag) s.title="🎮 "+T.players[id].gamertag;
+  return s;
+}
 
-  var hName=el("span",{class:"name"},hLabel);
-  var aName=el("span",{class:"name away"},aLabel);
-  if(ready){
-    var side=koWinnerSide(m);
-    if(side==="h") hName.classList.add("winner");
-    if(side==="a") aName.classList.add("winner");
-  }
-  if(seedLabels){
-    hName.prepend(el("span",{class:"seed"},seedLabels.hs));
-    aName.append(el("span",{class:"seed"},seedLabels.as));
-  }
+function gameRow(i,f,canEdit){
+  var m=T.results[i];
+  var done=m.h!=null&&m.a!=null;
+  var hi=scoreInput(m.h,"L"+i+"h",{disabled:!canEdit,oninput:function(){
+    T.results[i].h=parseScore(hi.value); postResult(i); render();
+  }});
+  var ai=scoreInput(m.a,"L"+i+"a",{disabled:!canEdit,oninput:function(){
+    T.results[i].a=parseScore(ai.value); postResult(i); render();
+  }});
+  return el("div",{class:"match"},
+    el("span",{class:"gnum"},"#"+(i+1)),
+    nameSpan(f.h,null,false,done&&m.h>m.a),hi,el("span",{class:"dash"},"–"),ai,
+    nameSpan(f.a,null,true,done&&m.a>m.h));
+}
+function postResult(i){
+  api("/api/t/"+code+"/result",{token:session.token,i:i,h:T.results[i].h,a:T.results[i].a});
+}
 
-  var hi=scoreInput(m.h,{disabled:!ready,
-    oninput:function(){ m.h=parseScore(hi.value); saveState(); },
-    onchange:function(){ renderKO(); }});
-  var ai=scoreInput(m.a,{disabled:!ready,
-    oninput:function(){ m.a=parseScore(ai.value); saveState(); },
-    onchange:function(){ renderKO(); }});
-
+function koCard(m,seedPos,canEdit){
+  var ready=m.home!=null&&m.away!=null;
+  var side=ready?koWinnerSide(m.scores):null;
+  var hN=nameSpan(m.home,m.ph1,false,side==="h");
+  var aN=nameSpan(m.away,m.ph2,true,side==="a");
+  if(seedPos&&m.home!=null) hN.prepend(el("span",{class:"seed"},String(seedPos[m.home])));
+  if(seedPos&&m.away!=null) aN.append(el("span",{class:"seed"},String(seedPos[m.away])));
+  var hi=scoreInput(m.scores.h,"K"+m.key+"h",{disabled:!ready||!canEdit,oninput:function(){
+    setKo(m.key,"h",parseScore(hi.value));
+  }});
+  var ai=scoreInput(m.scores.a,"K"+m.key+"a",{disabled:!ready||!canEdit,oninput:function(){
+    setKo(m.key,"a",parseScore(ai.value));
+  }});
   var card=el("div",{class:"ko-match"},
-    el("div",{class:"tag"},title),
-    el("div",{class:"match"},hName,hi,el("span",{class:"dash"},"–"),ai,aName)
-  );
-
-  /* penalties when level */
-  if(ready && m.h!=null && m.a!=null && m.h===m.a){
-    var pi=scoreInput(m.ph,{oninput:function(){ m.ph=parseScore(pi.value); saveState(); },onchange:function(){ renderKO(); }});
-    var pa=scoreInput(m.pa,{oninput:function(){ m.pa=parseScore(pa.value); saveState(); },onchange:function(){ renderKO(); }});
+    el("div",{class:"tag"},m.tag),
+    el("div",{class:"match"},hN,hi,el("span",{class:"dash"},"–"),ai,aN));
+  if(ready&&m.scores.h!=null&&m.scores.a!=null&&m.scores.h===m.scores.a){
+    var pi=scoreInput(m.scores.ph,"K"+m.key+"ph",{disabled:!canEdit,oninput:function(){ setKo(m.key,"ph",parseScore(pi.value)); }});
+    var pa=scoreInput(m.scores.pa,"K"+m.key+"pa",{disabled:!canEdit,oninput:function(){ setKo(m.key,"pa",parseScore(pa.value)); }});
     card.append(el("div",{class:"pens"},"Penalties:",pi,el("span",{class:"dash"},"–"),pa));
   }
   return card;
 }
+function setKo(key,field,val){
+  var cur=T.ko[key]||{h:null,a:null,ph:null,pa:null};
+  cur[field]=val;
+  T.ko[key]=cur;
+  api("/api/t/"+code+"/ko",{token:session.token,key:key,h:cur.h,a:cur.a,ph:cur.ph,pa:cur.pa});
+  render();
+}
 
-/* ---------- boot ---------- */
-function boot(){
-  state=loadState();
-  if(state && state.started) buildMain();
-  else { state=null; showSetup(false); }
+/* koSize is stored after the draw; project it from the player count before */
+function koSizeDisplay(t){
+  return t.koSize!=null?t.koSize:projectedKoSize(t.players.length);
+}
+
+/* ================= boot & routing ================= */
+
+function currentCode(){
+  var m=/^#\/t\/([A-Za-z0-9]{6})$/.exec(location.hash||"");
+  if(m) return m[1].toUpperCase();
+  var q=new URLSearchParams(location.search).get("c");
+  if(q&&/^[A-Za-z0-9]{6}$/.test(q)) return q.toUpperCase();
+  return null;
+}
+async function boot(){
+  var c=currentCode();
+  if(!c){
+    code=null;T=null;session=null;
+    if(ws){ try{ ws.onclose=null; ws.close(); }catch(e){} ws=null; }
+    clearTimeout(wsTimer);
+    render();
+    return;
+  }
+  code=c;
+  session=loadSession(code);
+  var res;
+  try{ res=await fetch("/api/t/"+code+"/state"); }catch(e){ res=null; }
+  if(!res||res.status===404){
+    var app=$("#app"); app.innerHTML="";
+    app.append(el("div",{class:"card"},
+      el("h2",{},"Not found"),
+      el("div",{class:"legend"},"No tournament with code "+code+". Check the code with your host."),
+      el("div",{class:"actions"},el("button",{class:"btn",onclick:function(){ location.hash=""; }},"Back"))));
+    return;
+  }
+  T=(await res.json()).t;
+  connect();
+  render();
 }
 if(typeof document!=="undefined"){
+  window.addEventListener("hashchange",boot);
   document.addEventListener("DOMContentLoaded",boot);
 }
 </script>

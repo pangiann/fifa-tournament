@@ -1,0 +1,13 @@
+{
+  "name": "fifa-tournament",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-05-03",
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "TOURNAMENT", "class_name": "Tournament" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Tournament"] }]
+}

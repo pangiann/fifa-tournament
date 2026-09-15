@@ -1,0 +1,9 @@
+{
+  "name": "fifa-tournament",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx wrangler dev",
+    "test": "node test/logic.test.mjs && node test/client.test.mjs"
+  }
+}
