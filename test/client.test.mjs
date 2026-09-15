@@ -9,7 +9,7 @@ const html = readFileSync(join(root, "index.html"), "utf8");
 const src = html.match(/<script>([\s\S]*)<\/script>/)[1];
 const ctx = createContext({ console });
 runInContext(src, ctx);
-const { standingsOf, qualifiedIds, bracketOrder, koRoundsOf, championOf, leagueCompleteT, koWinnerSide, clientValidateDraw } = ctx;
+const { standingsOf, qualifiedIds, bracketOrder, koRoundsOf, championOf, smallFinalOf, koMatchWinner, leagueCompleteT, koWinnerSide, clientValidateDraw } = ctx;
 
 let fail = 0;
 function assert(cond, msg) {
@@ -76,6 +76,15 @@ assert(t.players[rounds[1].matches[0].home].name === "B", "pens winner B reaches
 assert(t.players[rounds[1].matches[0].away].name === "A", "A reaches the final");
 t.ko["r1m0"] = { h: 0, a: 1, ph: null, pa: null }; // B 0-1 A
 assert(t.players[championOf(t)].name === "A", "champion is A");
+
+/* small final: losers of SF1 (C v B -> C) and SF2 (D v A -> D) */
+let sf = smallFinalOf(t);
+assert(sf && t.players[sf.home].name === "C" && t.players[sf.away].name === "D", "small final pairs the semi-final losers C v D");
+assert(sf.key === "third" && sf.scores.h === null, "small final keyed 'third' with empty scores");
+t.ko["third"] = { h: 2, a: 3, ph: null, pa: null };
+assert(t.players[koMatchWinner(smallFinalOf(t))].name === "D", "bronze goes to D");
+const tiny = { ...mkState(), koSize: 2 };
+assert(smallFinalOf(tiny) === null, "no small final when there are no semi-finals");
 
 /* exempt player: points-per-game ranking */
 t = mkState();

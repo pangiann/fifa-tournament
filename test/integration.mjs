@@ -85,6 +85,21 @@ const deg = Array(21).fill(0);
 st.data.t.fixtures.forEach(f => { deg[f.h]++; deg[f.a]++; });
 assert(deg.every(d => d === 4), "everyone has exactly 4 games after the shuffle");
 
+/* --- small final toggle (21-player tournament, top 8) --- */
+assert(st.data.t.third === false, "small final is off by default");
+assert((await post("/api/t/" + C2 + "/third", { token: "nope", enabled: true })).status === 403, "non-host cannot toggle the small final");
+assert((await post("/api/t/" + C2 + "/third", { token: T2, enabled: true })).status === 200, "host enables the small final after the draw");
+st = await state(C2);
+assert(st.data.t.third === true, "small final flag stored");
+for (let i = 0; i < 42; i++) await post("/api/t/" + C2 + "/result", { token: T2, i, h: 1, a: 0 });
+assert((await post("/api/t/" + C2 + "/ko", { token: T2, key: "third", h: 2, a: 1 })).status === 200, "small final score accepted when enabled");
+assert((await post("/api/t/" + C2 + "/third", { token: T2, enabled: false })).status === 409, "cannot remove a small final that has a score");
+await post("/api/t/" + C2 + "/ko", { token: T2, key: "third", h: null, a: null });
+assert((await post("/api/t/" + C2 + "/third", { token: T2, enabled: false })).status === 200, "removed once the score is cleared");
+assert((await post("/api/t/" + C2 + "/ko", { token: T2, key: "third", h: 2, a: 1 })).status === 400, "small final key rejected when disabled");
+/* the 3-player tournament has no semis */
+assert((await post("/api/t/" + CODE + "/third", { token: HOST, enabled: true })).status === 409, "no small final without semi-finals");
+
 /* --- leave and kick (lobby only) --- */
 r = await post("/api/create", { name: "Ann", k: 2 });
 const C3 = r.data.code, HOST3 = r.data.token;

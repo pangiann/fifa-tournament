@@ -68,7 +68,7 @@ export class Tournament {
       maxPlayers: MAX_PLAYERS,
       players: t.players.map(p => ({ id: p.id, name: p.name, gamertag: p.gamertag })),
       fixtures: t.fixtures, results: t.results,
-      exempt: t.exempt, koSize: t.koSize, ko: t.ko
+      exempt: t.exempt, koSize: t.koSize, ko: t.ko, third: t.third === true
     };
   }
   broadcast() {
@@ -89,6 +89,7 @@ export class Tournament {
     return t.nextId++;
   }
   validKoKey(key) {
+    if (key === "third") return this.t.third === true && this.t.koSize >= 4;
     const m = /^r(\d+)m(\d+)$/.exec(key);
     if (!m) return false;
     const r = +m[1], mi = +m[2], S = this.t.koSize;
@@ -121,7 +122,7 @@ export class Tournament {
       const host = { id: 0, name, gamertag: clean(b.gamertag), token: crypto.randomUUID() };
       this.t = {
         code: b.code, phase: "lobby", k, hostId: 0, players: [host], nextId: 1,
-        fixtures: [], results: [], exempt: null, koSize: null, ko: {}
+        fixtures: [], results: [], exempt: null, koSize: null, ko: {}, third: false
       };
       await this.persist();
       return json({ code: b.code, playerId: 0, token: host.token });
@@ -233,6 +234,26 @@ export class Tournament {
       return json({ ok: true });
     }
 
+    if (path === "/third" && req.method === "POST") {
+      const b = await readJson(req);
+      if (!b) return json({ error: "bad_json" }, 400);
+      const me = this.playerByToken(b.token);
+      if (!me || me.id !== t.hostId)
+        return json({ error: "not_host", message: "Only the host can change the format." }, 403);
+      if (t.phase !== "league" || t.koSize < 4)
+        return json({ error: "no_semis", message: "A small final needs semi-finals." }, 409);
+      const enabled = b.enabled === true;
+      const sc = t.ko.third;
+      const hasScores = !!sc && (sc.h !== null || sc.a !== null || sc.ph !== null || sc.pa !== null);
+      if (!enabled && hasScores)
+        return json({ error: "has_scores", message: "Clear the small final's score before removing it." }, 409);
+      t.third = enabled;
+      if (!enabled) delete t.ko.third;
+      await this.persist();
+      this.broadcast();
+      return json({ ok: true });
+    }
+
     if (path === "/ko" && req.method === "POST") {
       const b = await readJson(req);
       if (!b) return json({ error: "bad_json" }, 400);
@@ -280,7 +301,7 @@ export default {
       return json({ error: "retry", message: "Could not allocate a code, try again." }, 500);
     }
 
-    const m = /^\/api\/t\/([A-Za-z0-9]{6})\/(state|ws|join|leave|kick|draw|result|ko)$/.exec(url.pathname);
+    const m = /^\/api\/t\/([A-Za-z0-9]{6})\/(state|ws|join|leave|kick|draw|result|ko|third)$/.exec(url.pathname);
     if (m) {
       const code = m[1].toUpperCase();
       const stub = env.TOURNAMENT.get(env.TOURNAMENT.idFromName(code));

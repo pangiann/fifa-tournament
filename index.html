@@ -289,6 +289,21 @@ function championOf(t){
   var rounds=koRoundsOf(t);
   return koMatchWinner(rounds[rounds.length-1].matches[0]);
 }
+function koMatchLoser(m){
+  if(m.home==null||m.away==null) return null;
+  var s=koWinnerSide(m.scores);
+  return s ? (s==="h"?m.away:m.home) : null;
+}
+/* third-place match between the semi-final losers; null when there are no semis */
+function smallFinalOf(t){
+  var rounds=koRoundsOf(t);
+  if(rounds.length<2) return null;
+  var semis=rounds[rounds.length-2].matches;
+  return {key:"third",tag:"3rd place",
+    home:koMatchLoser(semis[0]),away:koMatchLoser(semis[1]),
+    ph1:"Loser "+semis[0].tag,ph2:"Loser "+semis[1].tag,
+    scores:t.ko.third||{h:null,a:null,ph:null,pa:null}};
+}
 
 /* ================= app state ================= */
 
@@ -672,9 +687,24 @@ function renderTournament(app){
       });
       grid.append(col);
     });
+    var sf=T.third?smallFinalOf(T):null;
+    if(sf){
+      grid.append(el("div",{class:"ko-round"},el("h3",{},"Small final"),koCard(sf,null,canEdit)));
+    }
     ko.append(grid);
+    var isHost=session&&session.playerId===T.hostId;
+    if(isHost&&T.koSize>=4){
+      var terr=el("div",{class:"error"});
+      ko.append(el("div",{class:"actions"},
+        el("button",{class:"btn ghost small",onclick:async function(){
+          var r=await api("/api/t/"+code+"/third",{token:session.token,enabled:!T.third});
+          if(!r.ok) terr.textContent=r.data.message||"Could not change the format.";
+        }},T.third?"Remove small final":"🥉 Add small final"),terr));
+    }
     var champ=championOf(T);
     if(champ!=null) ko.append(el("div",{class:"champion"},"🏆 "+pl(champ).name+" is the champion! 🏆"));
+    var bronze=sf?koMatchWinner(sf):null;
+    if(bronze!=null) ko.append(el("div",{class:"legend",style:"text-align:center;font-size:14px"},"🥉 "+pl(bronze).name+" takes third place"));
   }
   if(!canEdit) ko.append(el("div",{class:"legend"},"Spectator mode — results are entered by the players."));
   app.append(ko);
