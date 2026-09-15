@@ -29,11 +29,25 @@ h1{
 }
 .subtitle{color:var(--muted);margin:6px 0 22px;font-size:14px}
 .stars{letter-spacing:6px;color:var(--accent2);font-size:12px;margin-bottom:4px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;backdrop-filter:blur(4px)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;backdrop-filter:blur(4px);min-width:0}
 .card h2{margin:0 0 12px;font-size:15px;text-transform:uppercase;letter-spacing:2px;color:var(--accent2)}
 .card + .card, .layout + .card, .topbar + .card{margin-top:18px}
 .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,470px);gap:18px;align-items:start;margin-bottom:18px}
-@media (max-width:900px){.layout{grid-template-columns:1fr}}
+@media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:600px){
+  body{padding:18px 12px 70px}
+  .card{padding:14px}
+  h1{font-size:24px;letter-spacing:3px}
+  th,td{padding:6px 4px;font-size:13px}
+  .wdl{display:none}
+  td.pname,th.pname{max-width:110px}
+  .bigcode{font-size:26px;letter-spacing:6px}
+}
+@media (max-width:380px){
+  .seed{display:none}
+  .gfga{display:none}
+  .gnum{width:26px}
+}
 .landing{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
@@ -72,7 +86,7 @@ td.pts{font-weight:800}
 tr.top4 td{background:rgba(79,140,255,.10)}
 tr.top4 td:first-child{border-left:3px solid var(--accent)}
 tr:not(.top4) td:first-child{border-left:3px solid transparent}
-.scrollbox{max-height:520px;overflow-y:auto}
+.scrollbox{max-height:520px;overflow-y:auto;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .legend{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.5}
 .chip{display:inline-block;background:rgba(79,140,255,.15);border:1px solid rgba(79,140,255,.4);color:var(--accent2);
   border-radius:999px;padding:3px 12px;font-size:12px;font-weight:600}
@@ -106,7 +120,8 @@ tr:not(.top4) td:first-child{border-left:3px solid transparent}
 .filterbar input.txt{flex:1;min-width:140px;height:36px}
 .toggle{cursor:pointer;user-select:none}
 .toggle.on{background:rgba(56,217,150,.15);border-color:rgba(56,217,150,.5);color:var(--win)}
-.ko-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:6px;align-items:start}
+.ko-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px;margin-top:6px;align-items:start}
+.ko-round{min-width:0}
 .ko-round h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
 .ko-match{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:10px}
 .ko-match .tag{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
@@ -646,8 +661,8 @@ function renderTournament(app){
   st.append(el("h2",{},"Standings"));
   var showAvg=T.exempt!=null;
   var head=el("tr",{},el("th",{},"#"),el("th",{class:"pname"},"Player"),
-    el("th",{},"P"),el("th",{},"W"),el("th",{},"D"),el("th",{},"L"),
-    el("th",{},"GF"),el("th",{},"GA"),el("th",{},"GD"),el("th",{},"Pts"));
+    el("th",{},"P"),el("th",{class:"wdl"},"W"),el("th",{class:"wdl"},"D"),el("th",{class:"wdl"},"L"),
+    el("th",{class:"gfga"},"GF"),el("th",{class:"gfga"},"GA"),el("th",{},"GD"),el("th",{},"Pts"));
   if(showAvg) head.append(el("th",{},"Avg"));
   var tbody=el("tbody",{});
   var q=T.koSize;
@@ -659,8 +674,8 @@ function renderTournament(app){
     var tr=el("tr",{class:i<q?"top4":""},
       el("td",{},String(i+1)),
       nameCell,
-      el("td",{},String(r.p)),el("td",{},String(r.w)),el("td",{},String(r.d)),el("td",{},String(r.l)),
-      el("td",{},String(r.gf)),el("td",{},String(r.ga)),el("td",{},String(r.gd)),
+      el("td",{},String(r.p)),el("td",{class:"wdl"},String(r.w)),el("td",{class:"wdl"},String(r.d)),el("td",{class:"wdl"},String(r.l)),
+      el("td",{class:"gfga"},String(r.gf)),el("td",{class:"gfga"},String(r.ga)),el("td",{},String(r.gd)),
       el("td",{class:"pts"},String(r.pts)));
     if(showAvg) tr.append(el("td",{},r.avg.toFixed(2)));
     tbody.append(tr);
