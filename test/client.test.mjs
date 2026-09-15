@@ -88,6 +88,21 @@ assert(A.assigned === 2 && E.assigned === 1, "assigned games respect exempt");
 assert(E.avg === 3 && A.avg === 1.5, "avg: E 3.00, A 1.50");
 assert(s[0].name === "E", "E tops the table on points per game");
 
+/* non-contiguous ids (players 1 and 3 were removed in the lobby before the draw) */
+t = {
+  players: [{ id: 0, name: "A" }, { id: 2, name: "C" }, { id: 4, name: "E" }, { id: 7, name: "H" }],
+  k: 2, exempt: null, koSize: 4, hostId: 0, phase: "league",
+  fixtures: [{ h: 0, a: 2 }, { h: 2, a: 4 }, { h: 4, a: 7 }, { h: 7, a: 0 }],
+  results: [{ h: 3, a: 0 }, { h: 1, a: 0 }, { h: 2, a: 2 }, { h: 0, a: 1 }],
+  ko: {}
+};
+s = standingsOf(t);
+assert(s.map(r => r.name).join("") === "ACEH" || s[0].name === "A", "non-contiguous ids: A tops with 2 wins (+4)");
+assert(s.find(r => r.name === "H").p === 2 && s.find(r => r.name === "H").pts === 1, "non-contiguous ids: H has 2 played, 1 pt");
+rounds = koRoundsOf(t);
+assert(rounds[0].matches[0].home === 0, "non-contiguous ids: seed 1 (id 0) is SF1 home");
+assert([2, 4, 7].includes(rounds[0].matches[0].away), "non-contiguous ids: SF1 away is a real player id");
+
 /* ko winner basics */
 assert(koWinnerSide({ h: 2, a: 1, ph: null, pa: null }) === "h", "higher score wins");
 assert(koWinnerSide({ h: 1, a: 1, ph: null, pa: null }) === null, "level, no pens -> undecided");

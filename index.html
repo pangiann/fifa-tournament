@@ -90,8 +90,14 @@ tr:not(.top4) td:first-child{border-left:3px solid transparent}
 }
 .plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;max-height:340px;overflow-y:auto}
 .pill{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:14px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pill .gt{display:block;font-size:11px;color:var(--muted)}
+  display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;min-width:0}
+.pill .pname-inline{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.pill .gt{display:block;font-size:11px;color:var(--muted);width:100%}
+.pill .kick{
+  background:transparent;border:1px solid rgba(255,107,129,.4);color:var(--bad);border-radius:6px;
+  width:24px;height:24px;font-size:12px;cursor:pointer;flex:none;line-height:1;
+}
+.pill .kick:hover{background:rgba(255,107,129,.15)}
 .filterbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
 .filterbar input.txt{flex:1;min-width:140px;height:36px}
 .toggle{cursor:pointer;user-select:none}
@@ -154,6 +160,7 @@ function standingsOf(t){
     return {id:p.id,name:p.name,assigned:t.k-(t.exempt===p.id?1:0),
             p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0,avg:0};
   });
+  var byId={}; rows.forEach(function(r){ byId[r.id]=r; });
   function apply(map,f,m){
     map[f.h].gf+=m.h; map[f.h].gd+=m.h-m.a;
     map[f.a].gf+=m.a; map[f.a].gd+=m.a-m.h;
@@ -164,7 +171,7 @@ function standingsOf(t){
   t.fixtures.forEach(function(f,i){
     var m=t.results[i];
     if(!m||m.h==null||m.a==null) return;
-    var H=rows[f.h],A=rows[f.a];
+    var H=byId[f.h],A=byId[f.a];
     H.p++;A.p++; H.gf+=m.h;H.ga+=m.a; A.gf+=m.a;A.ga+=m.h;
     if(m.h>m.a){H.w++;H.pts+=3;A.l++;}
     else if(m.a>m.h){A.w++;A.pts+=3;H.l++;}
@@ -260,18 +267,37 @@ function championOf(t){
 /* ================= app state ================= */
 
 var T=null;          // tournament public state (from server)
+var PMAP={};         // player id -> player, rebuilt whenever T changes
 var code=null;       // active code
 var session=null;    // {token, playerId, name} for this device
 var ws=null, wsTimer=null, wsPing=null, wsDown=false;
 var drawError=null;  // last draw rejection, shown in lobby
+var removedNotice=false; // this device's player was removed by the host
 var filterText="", onlyMine=false;
 var landingError={create:"",join:""};
 
+function setT(t){
+  T=t; PMAP={};
+  t.players.forEach(function(p){ PMAP[p.id]=p; });
+  /* our player vanished (removed by host, or the room was reset) */
+  if(session&&!PMAP[session.playerId]){
+    session=null; clearSession(code);
+    try{ localStorage.setItem("mp-removed-"+code,"1"); }catch(e){}
+    removedNotice=true;
+  }
+}
+function pl(id){ return PMAP[id]; }
+function wasRemoved(c){
+  try{ return localStorage.getItem("mp-removed-"+c)==="1"; }catch(e){ return false; }
+}
 function loadSession(c){
   try{ var raw=localStorage.getItem("mp-sess-"+c); return raw?JSON.parse(raw):null; }catch(e){ return null; }
 }
 function saveSession(c,s){
   try{ localStorage.setItem("mp-sess-"+c,JSON.stringify(s)); }catch(e){}
+}
+function clearSession(c){
+  try{ localStorage.removeItem("mp-sess-"+c); }catch(e){}
 }
 async function api(path,body){
   try{
@@ -299,7 +325,7 @@ function connect(){
     if(ev.data==="pong") return;
     try{
       var msg=JSON.parse(ev.data);
-      if(msg.type==="state"){ T=msg.t; wsDown=false; render(); }
+      if(msg.type==="state"){ setT(msg.t); wsDown=false; render(); }
     }catch(e){}
   };
   ws.onclose=function(){
@@ -395,6 +421,9 @@ function renderLanding(app){
         el("button",{class:"btn",onclick:async function(){
           var c=jcode.value.trim().toUpperCase();
           if(!/^[A-Z0-9]{6}$/.test(c)){ jerr.textContent="Codes are 6 letters/digits."; return; }
+          /* this browser already has a player in that tournament: go back in as them */
+          if(loadSession(c)){ location.hash="#/t/"+c; return; }
+          if(wasRemoved(c)){ jerr.textContent="You were removed from this tournament by the host."; return; }
           var r=await api("/api/t/"+c+"/join",{name:jname.value,gamertag:jgt.value});
           if(!r.ok){ jerr.textContent=r.data.message||"Could not join."; return; }
           saveSession(c,{token:r.data.token,playerId:r.data.playerId,name:jname.value.trim()});
@@ -421,9 +450,19 @@ function topbar(){
     var link=location.origin+"/#/t/"+code;
     if(navigator.clipboard) navigator.clipboard.writeText(link);
   }},"Copy invite link"));
-  bar.append(el("button",{class:"btn ghost small",onclick:function(){
-    location.hash="";
-  }},"Exit"));
+  var isHost=session&&session.playerId===T.hostId;
+  if(session&&!isHost&&T.phase==="lobby"){
+    bar.append(el("button",{class:"btn ghost small",onclick:async function(){
+      if(!confirm("Leave the tournament? Your spot is removed — you can join again with a new name.")) return;
+      var r=await api("/api/t/"+code+"/leave",{token:session.token});
+      if(r.ok||r.status===403){ session=null; clearSession(code); }
+      location.hash="";
+    }},"Leave tournament"));
+  } else {
+    bar.append(el("button",{class:"btn ghost small",onclick:function(){
+      location.hash="";
+    }},"Home"));
+  }
   return bar;
 }
 
@@ -436,16 +475,26 @@ function renderLobby(app){
     "Share the code or the invite link. Players join from their own phone or laptop. ",
     T.players.length+" / "+T.maxPlayers+" joined."));
 
+  var isHost=session&&session.playerId===T.hostId;
   var list=el("div",{class:"plist"});
   T.players.forEach(function(p){
-    list.append(el("div",{class:"pill"},
-      p.name+(p.id===T.hostId?" 👑":""),
-      p.gamertag?el("span",{class:"gt"},"🎮 "+p.gamertag):null));
+    var pill=el("div",{class:"pill"},
+      el("span",{class:"pname-inline"},p.name+(p.id===T.hostId?" 👑":"")),
+      p.gamertag?el("span",{class:"gt"},"🎮 "+p.gamertag):null);
+    if(isHost&&p.id!==T.hostId){
+      pill.append(el("button",{class:"kick",title:"Remove "+p.name,onclick:async function(){
+        if(!confirm("Remove "+p.name+" from the tournament?")) return;
+        await api("/api/t/"+code+"/kick",{token:session.token,playerId:p.id});
+      }},"✕"));
+    }
+    list.append(pill);
   });
   card.append(list);
 
   /* join form for visitors who haven't joined yet */
-  if(!session){
+  if(!session&&(removedNotice||wasRemoved(code))){
+    card.append(el("div",{class:"notice"},"You were removed from this tournament by the host. You can still watch."));
+  } else if(!session){
     var jn=el("input",{class:"txt",type:"text",maxlength:"20",placeholder:"Your name","data-fkey":"joinname"});
     var jg=el("input",{class:"txt",type:"text",maxlength:"20",placeholder:"Gamertag (optional)","data-fkey":"joingt"});
     var jerr=el("div",{class:"error"});
@@ -463,7 +512,7 @@ function renderLobby(app){
   }
 
   /* host controls */
-  if(session&&session.playerId===T.hostId){
+  if(isHost){
     var n=T.players.length;
     var kin=el("input",{class:"num",type:"number",min:"1",step:"1","data-fkey":"kin",
       oninput:function(){ hint.textContent=hintText(); }});
@@ -530,14 +579,14 @@ function renderTournament(app){
   T.fixtures.forEach(function(f,i){
     if(onlyMine&&session&&f.h!==session.playerId&&f.a!==session.playerId) return;
     if(ft){
-      var hn=T.players[f.h].name.toLowerCase(),an=T.players[f.a].name.toLowerCase();
+      var hn=pl(f.h).name.toLowerCase(),an=pl(f.a).name.toLowerCase();
       if(hn.indexOf(ft)<0&&an.indexOf(ft)<0) return;
     }
     listBox.append(gameRow(i,f,canEdit));
   });
   fx.append(listBox);
   if(T.exempt!=null){
-    fx.append(el("div",{class:"legend"},"° "+T.players[T.exempt].name+" plays one game fewer (odd draw) — the table ranks by points per game."));
+    fx.append(el("div",{class:"legend"},"° "+pl(T.exempt).name+" plays one game fewer (odd draw) — the table ranks by points per game."));
   }
   layout.append(fx);
 
@@ -585,7 +634,7 @@ function renderTournament(app){
     });
     ko.append(grid);
     var champ=championOf(T);
-    if(champ!=null) ko.append(el("div",{class:"champion"},"🏆 "+T.players[champ].name+" is the champion! 🏆"));
+    if(champ!=null) ko.append(el("div",{class:"champion"},"🏆 "+pl(champ).name+" is the champion! 🏆"));
   }
   if(!canEdit) ko.append(el("div",{class:"legend"},"Spectator mode — results are entered by the players."));
   app.append(ko);
@@ -594,9 +643,9 @@ function renderTournament(app){
 function nameSpan(id,placeholder,away,winner){
   var cls="name"+(away?" away":"")+(winner?" winner":"");
   if(session&&id===session.playerId) cls+=" me";
-  var label=id!=null?T.players[id].name:(placeholder||"TBD");
+  var label=id!=null?pl(id).name:(placeholder||"TBD");
   var s=el("span",{class:cls},label);
-  if(id!=null&&T.players[id].gamertag) s.title="🎮 "+T.players[id].gamertag;
+  if(id!=null&&pl(id).gamertag) s.title="🎮 "+pl(id).gamertag;
   return s;
 }
 
@@ -674,6 +723,7 @@ async function boot(){
   }
   code=c;
   session=loadSession(code);
+  removedNotice=false;
   var res;
   try{ res=await fetch("/api/t/"+code+"/state"); }catch(e){ res=null; }
   if(!res||res.status===404){
@@ -684,7 +734,7 @@ async function boot(){
       el("div",{class:"actions"},el("button",{class:"btn",onclick:function(){ location.hash=""; }},"Back"))));
     return;
   }
-  T=(await res.json()).t;
+  setT((await res.json()).t);
   connect();
   render();
 }

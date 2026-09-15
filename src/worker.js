@@ -81,6 +81,13 @@ export class Tournament {
     if (typeof token !== "string" || !token) return null;
     return this.t.players.find(p => p.token === token) || null;
   }
+  /* ids never get reused, so removed players can't be confused with new ones */
+  nextId() {
+    const t = this.t;
+    if (!Number.isInteger(t.nextId))
+      t.nextId = t.players.reduce((m, p) => Math.max(m, p.id), -1) + 1;
+    return t.nextId++;
+  }
   validKoKey(key) {
     const m = /^r(\d+)m(\d+)$/.exec(key);
     if (!m) return false;
@@ -113,7 +120,7 @@ export class Tournament {
         return json({ error: "bad_k", message: "Games per player must be between 1 and " + (MAX_PLAYERS - 1) + "." }, 400);
       const host = { id: 0, name, gamertag: clean(b.gamertag), token: crypto.randomUUID() };
       this.t = {
-        code: b.code, phase: "lobby", k, hostId: 0, players: [host],
+        code: b.code, phase: "lobby", k, hostId: 0, players: [host], nextId: 1,
         fixtures: [], results: [], exempt: null, koSize: null, ko: {}
       };
       await this.persist();
@@ -144,11 +151,44 @@ export class Tournament {
       if (!name) return json({ error: "bad_name", message: "Enter your name." }, 400);
       if (t.players.some(p => p.name.toLowerCase() === name.toLowerCase()))
         return json({ error: "dup_name", message: "That name is taken — pick another." }, 409);
-      const p = { id: t.players.length, name, gamertag: clean(b.gamertag), token: crypto.randomUUID() };
+      const id = this.nextId();
+      const p = { id, name, gamertag: clean(b.gamertag), token: crypto.randomUUID() };
       t.players.push(p);
       await this.persist();
       this.broadcast();
       return json({ code: t.code, playerId: p.id, token: p.token });
+    }
+
+    if (path === "/leave" && req.method === "POST") {
+      const b = await readJson(req);
+      if (!b) return json({ error: "bad_json" }, 400);
+      const me = this.playerByToken(b.token);
+      if (!me) return json({ error: "not_player" }, 403);
+      if (me.id === t.hostId)
+        return json({ error: "host", message: "The host can't leave their own tournament." }, 403);
+      if (t.phase !== "lobby")
+        return json({ error: "drawn", message: "The draw is done — you can't leave now." }, 409);
+      t.players = t.players.filter(p => p.id !== me.id);
+      await this.persist();
+      this.broadcast();
+      return json({ ok: true });
+    }
+
+    if (path === "/kick" && req.method === "POST") {
+      const b = await readJson(req);
+      if (!b) return json({ error: "bad_json" }, 400);
+      const me = this.playerByToken(b.token);
+      if (!me || me.id !== t.hostId)
+        return json({ error: "not_host", message: "Only the host can remove players." }, 403);
+      if (t.phase !== "lobby")
+        return json({ error: "drawn", message: "The draw is done — players can't be removed now." }, 409);
+      const id = int(b.playerId);
+      if (id === null || id === t.hostId || !t.players.some(p => p.id === id))
+        return json({ error: "bad_player" }, 400);
+      t.players = t.players.filter(p => p.id !== id);
+      await this.persist();
+      this.broadcast();
+      return json({ ok: true });
     }
 
     if (path === "/draw" && req.method === "POST") {
@@ -166,10 +206,12 @@ export class Tournament {
       if (v && !useExempt) return json(v, 409);
       const g = genFixtures(n, k, useExempt);
       const perm = shuffled(n);
+      /* positions 0..n-1 are shuffled onto real player ids */
+      const idAt = pos => t.players[perm[pos]].id;
       t.k = k;
-      t.fixtures = g.fixtures.map(f => ({ h: perm[f.h], a: perm[f.a] }));
+      t.fixtures = g.fixtures.map(f => ({ h: idAt(f.h), a: idAt(f.a) }));
       t.results = g.fixtures.map(() => ({ h: null, a: null }));
-      t.exempt = g.exemptPos === null ? null : perm[g.exemptPos];
+      t.exempt = g.exemptPos === null ? null : idAt(g.exemptPos);
       t.koSize = koSizeFor(n);
       t.phase = "league";
       await this.persist();
@@ -238,7 +280,7 @@ export default {
       return json({ error: "retry", message: "Could not allocate a code, try again." }, 500);
     }
 
-    const m = /^\/api\/t\/([A-Za-z0-9]{6})\/(state|ws|join|draw|result|ko)$/.exec(url.pathname);
+    const m = /^\/api\/t\/([A-Za-z0-9]{6})\/(state|ws|join|leave|kick|draw|result|ko)$/.exec(url.pathname);
     if (m) {
       const code = m[1].toUpperCase();
       const stub = env.TOURNAMENT.get(env.TOURNAMENT.idFromName(code));

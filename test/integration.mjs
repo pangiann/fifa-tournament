@@ -85,6 +85,42 @@ const deg = Array(21).fill(0);
 st.data.t.fixtures.forEach(f => { deg[f.h]++; deg[f.a]++; });
 assert(deg.every(d => d === 4), "everyone has exactly 4 games after the shuffle");
 
+/* --- leave and kick (lobby only) --- */
+r = await post("/api/create", { name: "Ann", k: 2 });
+const C3 = r.data.code, HOST3 = r.data.token;
+const p1 = await post("/api/t/" + C3 + "/join", { name: "Ben" });
+const p2 = await post("/api/t/" + C3 + "/join", { name: "Cat" });
+const p3 = await post("/api/t/" + C3 + "/join", { name: "Dan" });
+assert(p1.data.playerId === 1 && p2.data.playerId === 2 && p3.data.playerId === 3, "ids assigned sequentially");
+
+assert((await post("/api/t/" + C3 + "/leave", { token: HOST3 })).status === 403, "host cannot leave");
+assert((await post("/api/t/" + C3 + "/leave", { token: "nope" })).status === 403, "leave requires a valid token");
+assert((await post("/api/t/" + C3 + "/leave", { token: p1.data.token })).status === 200, "player leaves the lobby");
+st = await state(C3);
+assert(st.data.t.players.map(p => p.name).join(",") === "Ann,Cat,Dan", "Ben removed after leaving");
+assert((await post("/api/t/" + C3 + "/result", { token: p1.data.token, i: 0, h: 1, a: 0 })).status === 403, "left player's token is dead");
+
+assert((await post("/api/t/" + C3 + "/kick", { token: p2.data.token, playerId: 3 })).status === 403, "non-host cannot kick");
+assert((await post("/api/t/" + C3 + "/kick", { token: HOST3, playerId: 0 })).status === 400, "host cannot kick themselves");
+assert((await post("/api/t/" + C3 + "/kick", { token: HOST3, playerId: 1 })).status === 400, "kicking an absent id is rejected");
+assert((await post("/api/t/" + C3 + "/kick", { token: HOST3, playerId: 3 })).status === 200, "host kicks Dan");
+st = await state(C3);
+assert(st.data.t.players.map(p => p.name).join(",") === "Ann,Cat", "Dan removed after kick");
+
+const p4 = await post("/api/t/" + C3 + "/join", { name: "Ben" });
+assert(p4.status === 200 && p4.data.playerId === 4, "rejoin gets a fresh id, old ids never reused");
+st = await state(C3);
+assert(st.data.t.players.map(p => p.id).join(",") === "0,2,4", "ids are stable and non-contiguous");
+
+r = await post("/api/t/" + C3 + "/draw", { token: HOST3, k: 2 });
+assert(r.status === 200, "draw works with non-contiguous ids");
+st = await state(C3);
+const ids = new Set(st.data.t.players.map(p => p.id));
+assert(st.data.t.fixtures.every(f => ids.has(f.h) && ids.has(f.a)), "fixtures reference real player ids");
+assert(st.data.t.fixtures.length === 3, "3 players x 2 games -> 3 fixtures");
+assert((await post("/api/t/" + C3 + "/leave", { token: p2.data.token })).status === 409, "cannot leave after the draw");
+assert((await post("/api/t/" + C3 + "/kick", { token: HOST3, playerId: 2 })).status === 409, "cannot kick after the draw");
+
 /* --- unknown code --- */
 assert((await state("ZZZZZ2")).status === 404, "unknown code -> 404");
 
