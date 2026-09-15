@@ -65,6 +65,10 @@ th,td{padding:7px 6px;text-align:center;border-bottom:1px solid rgba(255,255,255
 th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600}
 td.pname,th.pname{text-align:left;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 td.pts{font-weight:800}
+.qmark{
+  display:inline-block;margin-left:6px;padding:0 6px;border-radius:5px;font-size:10px;font-weight:800;
+  line-height:16px;vertical-align:middle;background:rgba(56,217,150,.18);border:1px solid rgba(56,217,150,.55);color:var(--win);
+}
 tr.top4 td{background:rgba(79,140,255,.10)}
 tr.top4 td:first-child{border-left:3px solid var(--accent)}
 tr:not(.top4) td:first-child{border-left:3px solid transparent}
@@ -200,6 +204,28 @@ function standingsOf(t){
     }
     out=out.concat(group); i2=j;
   }
+  return out;
+}
+/* Players guaranteed a knockout spot. X is safe when fewer than Q others
+   could still reach X's points even if X loses every remaining game and
+   they win all of theirs. Ties count as a threat, so this never marks a
+   player who could still drop out. Compared as points per assigned game
+   (cross-multiplied, integer-exact) so an exempt player is handled. */
+function qualifiedIds(t,rows){
+  var Q=t.koSize, out={};
+  if(!Q) return out;
+  if(leagueCompleteT(t)){ rows.slice(0,Q).forEach(function(r){ out[r.id]=true; }); return out; }
+  var maxPts=rows.map(function(r){ return r.pts+3*Math.max(0,r.assigned-r.p); });
+  rows.forEach(function(x,i){
+    if(x.assigned<=0) return;
+    var threats=0;
+    rows.forEach(function(y,j){
+      if(j===i||y.assigned<=0) return;
+      /* maxAvg(y) >= minAvg(x)  <=>  maxPts(y)/assigned(y) >= pts(x)/assigned(x) */
+      if(maxPts[j]*x.assigned >= x.pts*y.assigned) threats++;
+    });
+    if(threats<Q) out[x.id]=true;
+  });
   return out;
 }
 function koWinnerSide(m){
@@ -600,10 +626,14 @@ function renderTournament(app){
   if(showAvg) head.append(el("th",{},"Avg"));
   var tbody=el("tbody",{});
   var q=T.koSize;
-  standingsOf(T).forEach(function(r,i){
+  var rows=standingsOf(T);
+  var qual=qualifiedIds(T,rows);
+  rows.forEach(function(r,i){
+    var nameCell=el("td",{class:"pname"},r.name+(T.exempt===r.id?" °":""));
+    if(qual[r.id]) nameCell.append(el("span",{class:"qmark",title:"Qualified for the knockout stage"},"Q"));
     var tr=el("tr",{class:i<q?"top4":""},
       el("td",{},String(i+1)),
-      el("td",{class:"pname"},r.name+(T.exempt===r.id?" °":"")),
+      nameCell,
       el("td",{},String(r.p)),el("td",{},String(r.w)),el("td",{},String(r.d)),el("td",{},String(r.l)),
       el("td",{},String(r.gf)),el("td",{},String(r.ga)),el("td",{},String(r.gd)),
       el("td",{class:"pts"},String(r.pts)));
@@ -612,7 +642,7 @@ function renderTournament(app){
   });
   st.append(el("div",{class:"scrollbox"},el("table",{},el("thead",{},head),tbody)));
   st.append(el("div",{class:"legend"},
-    "Top "+q+" advance. Tie-breakers: "+(showAvg?"points per game":"points")+" → goal difference → goals scored → head-to-head."));
+    "Top "+q+" advance — ",el("span",{class:"qmark"},"Q")," marks players already guaranteed a spot. Tie-breakers: "+(showAvg?"points per game":"points")+" → goal difference → goals scored → head-to-head."));
   layout.append(st);
   app.append(layout);
 

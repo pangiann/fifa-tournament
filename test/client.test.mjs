@@ -9,7 +9,7 @@ const html = readFileSync(join(root, "index.html"), "utf8");
 const src = html.match(/<script>([\s\S]*)<\/script>/)[1];
 const ctx = createContext({ console });
 runInContext(src, ctx);
-const { standingsOf, bracketOrder, koRoundsOf, championOf, leagueCompleteT, koWinnerSide, clientValidateDraw } = ctx;
+const { standingsOf, qualifiedIds, bracketOrder, koRoundsOf, championOf, leagueCompleteT, koWinnerSide, clientValidateDraw } = ctx;
 
 let fail = 0;
 function assert(cond, msg) {
@@ -102,6 +102,38 @@ assert(s.find(r => r.name === "H").p === 2 && s.find(r => r.name === "H").pts ==
 rounds = koRoundsOf(t);
 assert(rounds[0].matches[0].home === 0, "non-contiguous ids: seed 1 (id 0) is SF1 home");
 assert([2, 4, 7].includes(rounds[0].matches[0].away), "non-contiguous ids: SF1 away is a real player id");
+
+/* qualification (Q) — 5 players, 2 games each, top 4 */
+t = mkState();
+let qual = qualifiedIds(t, standingsOf(t));
+assert(Object.keys(qual).length === 0, "Q: nobody qualified before any game");
+t.results[0] = { h: 1, a: 0 }; // A beats B
+t.results[3] = { h: 1, a: 0 }; // D beats E
+t.results[4] = { h: 0, a: 1 }; // E loses to A
+/* A: 6 pts, done. D: 3 pts, 1 left (max 6). B: 0, 1 left (max 3). C: 0, 2 left (max 6). E: 0, done. */
+qual = qualifiedIds(t, standingsOf(t));
+assert(qual[0] === true, "Q: A (6 pts, finished) is safe — only C and D can reach 6");
+assert(qual[3] === true, "Q: D (3 pts) is safe — only A, B, C can reach 3");
+assert(!qual[1] && !qual[2] && !qual[4], "Q: B, C, E are not safe yet");
+assert(Object.keys(qual).length === 2, "Q: exactly two players marked");
+/* finish the league: B beats C, C beats D -> everyone except E has 3+ pts */
+t.results[1] = { h: 1, a: 0 };
+t.results[2] = { h: 1, a: 0 };
+qual = qualifiedIds(t, standingsOf(t));
+assert(Object.keys(qual).length === 4 && !qual[4], "Q: after the league, exactly the top 4 are marked and E is out");
+
+/* Q never marks someone who could still be overtaken */
+t = mkState();
+t.results[0] = { h: 1, a: 0 }; // A 3 pts, 1 left; four rivals can all still reach 3
+qual = qualifiedIds(t, standingsOf(t));
+assert(Object.keys(qual).length === 0, "Q: A with 3 pts and four rivals able to reach 3 is not safe");
+
+/* Q with an exempt player uses points per game */
+t = mkState();
+t.exempt = 4; // E assigned 1 game
+t.results[3] = { h: 0, a: 3 }; // E beats D: E 3/1 = 3.00 avg, finished
+qual = qualifiedIds(t, standingsOf(t));
+assert(qual[4] === true, "Q: exempt E on a perfect 3.00 is safe (only A, B, C could tie it)");
 
 /* ko winner basics */
 assert(koWinnerSide({ h: 2, a: 1, ph: null, pa: null }) === "h", "higher score wins");
