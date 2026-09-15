@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Champions Night — 9-Player Tracker</title>
+<title>Champions Night — Tournament Tracker</title>
 <style>
 :root{
   --bg1:#04071f; --bg2:#0a1547;
@@ -32,6 +32,7 @@ h1{
 .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;backdrop-filter:blur(4px)}
 .card h2{margin:0 0 12px;font-size:15px;text-transform:uppercase;letter-spacing:2px;color:var(--accent2)}
 .card h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt)}
+.card + .card{margin-top:18px}
 .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,470px);gap:18px;align-items:start}
 @media (max-width:900px){.layout{grid-template-columns:1fr}}
 .mdgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
@@ -72,6 +73,16 @@ tr:not(.top4) td:first-child{border-left:3px solid transparent}
 .btn.danger{background:transparent;border:1px solid rgba(255,107,129,.45);color:var(--bad)}
 .btn.small{padding:7px 14px;font-size:12px}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
+.format-row{display:flex;gap:22px;flex-wrap:wrap;margin:6px 0 4px}
+.format-row label{display:block;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+input.num{
+  width:110px;height:42px;padding:0 12px;font-size:16px;font-weight:700;color:var(--txt);text-align:center;
+  background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:10px;outline:none;
+}
+input.num:focus{border-color:var(--accent)}
+.fmt-msg{margin-top:10px;font-size:13px;line-height:1.5;min-height:20px}
+.fmt-msg.good{color:var(--win)}
+.fmt-msg.bad{color:var(--bad)}
 .setup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:14px 0}
 .setup-grid input{
   width:100%;height:42px;padding:0 12px;font-size:15px;color:var(--txt);
@@ -98,23 +109,15 @@ tr:not(.top4) td:first-child{border-left:3px solid transparent}
 <div class="wrap">
   <div class="stars">✦ ✦ ✦ ✦ ✦</div>
   <h1>Champions Night</h1>
-  <div class="subtitle">9 players · league phase of 4 games each · top 4 to the semi-finals</div>
+  <div class="subtitle" id="subtitle">Swiss-style league phase · knockouts · glory</div>
   <div id="app"></div>
 </div>
 
 <script>
 "use strict";
 
-/* ---------- fixtures: 6 matchdays x 3 matches, every player exactly 4 games ---------- */
-var FIXTURES = [
-  {md:1,h:0,a:1},{md:1,h:2,a:3},{md:1,h:4,a:5},
-  {md:2,h:6,a:7},{md:2,h:8,a:0},{md:2,h:1,a:2},
-  {md:3,h:3,a:4},{md:3,h:5,a:6},{md:3,h:7,a:8},
-  {md:4,h:0,a:2},{md:4,h:6,a:8},{md:4,h:3,a:5},
-  {md:5,h:2,a:4},{md:5,h:1,a:8},{md:5,h:5,a:7},
-  {md:6,h:4,a:6},{md:6,h:1,a:3},{md:6,h:0,a:7},
-];
-var KEY = "ucl9-tracker-v1";
+var KEY = "ucl-tracker-v2";
+var MAX_PLAYERS = 40;
 var state = null;
 
 /* ---------- storage ---------- */
@@ -122,15 +125,63 @@ function getStore(){ try { return window.localStorage; } catch(e){ return null; 
 function saveState(){ var s=getStore(); if(s) s.setItem(KEY, JSON.stringify(state)); }
 function loadState(){
   var s=getStore(); if(!s) return null;
-  try { var raw=s.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch(e){ return null; }
+  try {
+    var raw=s.getItem(KEY);
+    var st=raw ? JSON.parse(raw) : null;
+    if(st && (!st.fixtures || !st.names || !st.league)) return null;
+    return st;
+  } catch(e){ return null; }
 }
 function emptyKo(){ return {h:null,a:null,ph:null,pa:null}; }
-function freshState(names){
+function freshState(names,k){
+  var fixtures=generateFixtures(names.length,k);
   return {
-    started:true, names:names,
-    league:FIXTURES.map(function(){ return {h:null,a:null}; }),
+    started:true, names:names, k:k, fixtures:fixtures,
+    league:fixtures.map(function(){ return {h:null,a:null}; }),
     ko:{sf1:emptyKo(),sf2:emptyKo(),third:emptyKo(),final:emptyKo()}
   };
+}
+
+/* ---------- format feasibility ---------- */
+function validateFormat(n,k){
+  if(!Number.isInteger(n)||n<2) return "You need at least 2 players.";
+  if(n>MAX_PLAYERS) return "Maximum "+MAX_PLAYERS+" players.";
+  if(!Number.isInteger(k)||k<1) return "Each player must play at least 1 game.";
+  if(k>n-1) return "Impossible: with "+n+" players, each one can face at most "+(n-1)+" different opponents. Lower the games count or add players.";
+  if((n*k)%2!==0){
+    var opts=[];
+    if(k-1>=1) opts.push((k-1)+" games");
+    if(k+1<=n-1) opts.push((k+1)+" games");
+    opts.push((n+1)+" players");
+    return "Impossible: "+n+" players × "+k+" games each = "+(n*k)+" (an odd total). Every match counts for 2 players, so the total must be even — someone would always be left one game short. Try "+opts.join(" or ")+".";
+  }
+  return null;
+}
+
+/* ---------- fixture generation ----------
+   Builds a K-regular pairing on N players (circulant construction:
+   everyone plays neighbours at distances 1..K/2 around a circle, plus
+   the player directly opposite when K is odd — K odd forces N even).
+   Then greedily groups matches into matchdays so nobody plays twice
+   on the same matchday. Randomness comes from shuffling names onto
+   circle positions at the draw. */
+function generateFixtures(n,k){
+  if(validateFormat(n,k)) throw new Error("invalid format "+n+"/"+k);
+  var edges=[],i,s;
+  var m=Math.floor(k/2);
+  for(s=1;s<=m;s++) for(i=0;i<n;i++) edges.push([i,(i+s)%n]);
+  if(k%2===1){ var half=n/2; for(i=0;i<half;i++) edges.push([i,i+half]); }
+  var rounds=[]; // per matchday: set of busy players
+  var fixtures=[];
+  edges.forEach(function(e){
+    var r=0;
+    while(r<rounds.length && (rounds[r][e[0]]||rounds[r][e[1]])) r++;
+    if(r===rounds.length) rounds.push({});
+    rounds[r][e[0]]=true; rounds[r][e[1]]=true;
+    fixtures.push({md:r+1,h:e[0],a:e[1]});
+  });
+  fixtures.sort(function(x,y){ return x.md-y.md; });
+  return fixtures;
 }
 
 /* ---------- pure logic ---------- */
@@ -145,12 +196,14 @@ function parseScore(v){
 function playedCount(){
   return state.league.filter(function(m){ return m.h!=null && m.a!=null; }).length;
 }
-function leagueComplete(){ return playedCount()===FIXTURES.length; }
+function leagueComplete(){ return playedCount()===state.fixtures.length; }
+function qualCount(){ return state.names.length>=4 ? 4 : 2; }
 
 function computeStandings(){
+  var n=state.names.length;
   var rows=[];
-  for(var i=0;i<9;i++) rows.push({id:i,name:state.names[i],p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0});
-  FIXTURES.forEach(function(f,idx){
+  for(var i=0;i<n;i++) rows.push({id:i,name:state.names[i],p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0});
+  state.fixtures.forEach(function(f,idx){
     var m=state.league[idx];
     if(m.h==null||m.a==null) return;
     var H=rows[f.h],A=rows[f.a];
@@ -162,14 +215,14 @@ function computeStandings(){
   rows.forEach(function(r){ r.gd=r.gf-r.ga; });
   rows.sort(function(a,b){ return b.pts-a.pts || b.gd-a.gd || b.gf-a.gf || a.id-b.id; });
   /* head-to-head mini-table inside groups tied on pts+gd+gf */
-  var out=[],i=0;
-  while(i<rows.length){
-    var j=i+1;
-    while(j<rows.length && rows[j].pts===rows[i].pts && rows[j].gd===rows[i].gd && rows[j].gf===rows[i].gf) j++;
-    var group=rows.slice(i,j);
+  var out=[],i2=0;
+  while(i2<rows.length){
+    var j=i2+1;
+    while(j<rows.length && rows[j].pts===rows[i2].pts && rows[j].gd===rows[i2].gd && rows[j].gf===rows[i2].gf) j++;
+    var group=rows.slice(i2,j);
     if(group.length>1){
       var ids={}; group.forEach(function(r){ ids[r.id]={pts:0,gd:0,gf:0}; });
-      FIXTURES.forEach(function(f,idx){
+      state.fixtures.forEach(function(f,idx){
         var m=state.league[idx];
         if(m.h==null||m.a==null) return;
         if(!(f.h in ids)||!(f.a in ids)) return;
@@ -184,7 +237,7 @@ function computeStandings(){
         return B.pts-A.pts || B.gd-A.gd || B.gf-A.gf || a.id-b.id;
       });
     }
-    out=out.concat(group); i=j;
+    out=out.concat(group); i2=j;
   }
   return out;
 }
@@ -236,39 +289,89 @@ function scoreInput(val, opts){
 function showSetup(editMode){
   var app=$("#app"); app.innerHTML="";
   var locked = editMode && anyResults();
+  var nameValues = (state && state.names) ? state.names.slice() : [];
 
   var card=el("div",{class:"card"});
-  card.append(el("h2",{},editMode?"Edit player names":"The draw"));
-  card.append(el("div",{class:"legend"},
-    editMode
-      ? (locked ? "Results already exist, so slots are fixed — you can only rename players." 
-                : "Rename players, or re-draw the slots.")
-      : "Enter the 9 players. Slot numbers decide the fixtures, so either use the random draw (recommended) or agree on the order yourselves."
-  ));
+  card.append(el("h2",{},editMode?"Edit player names":"Tournament format"));
 
-  var grid=el("div",{class:"setup-grid"});
-  var inputs=[];
-  for(var i=0;i<9;i++){
-    var inp=el("input",{type:"text",maxlength:"20",placeholder:"Player "+(i+1)});
-    inp.value = (state && state.names && state.names[i]) ? state.names[i] : "";
-    inputs.push(inp);
-    grid.append(el("div",{},el("div",{class:"slot"},"SLOT "+(i+1)),inp));
+  var countInput=el("input",{class:"num",type:"number",min:"2",max:String(MAX_PLAYERS),step:"1"});
+  var gamesInput=el("input",{class:"num",type:"number",min:"1",step:"1"});
+  countInput.value = editMode ? state.names.length : 9;
+  gamesInput.value = editMode ? state.k : 4;
+  var fmtMsg=el("div",{class:"fmt-msg"});
+
+  if(editMode){
+    card.append(el("div",{class:"legend"},
+      "Format is locked once the tournament is created: ",
+      state.names.length+" players · "+state.k+" games each. ",
+      locked ? "Results already exist, so slots are fixed — you can only rename players."
+             : "You can rename players, or re-draw the slots."));
+  } else {
+    var row=el("div",{class:"format-row"},
+      el("div",{},el("label",{},"Players"),countInput),
+      el("div",{},el("label",{},"Games per player"),gamesInput));
+    card.append(row,fmtMsg);
   }
-  card.append(grid);
+
+  function currentFormat(){
+    return { n:parseInt(countInput.value,10), k:parseInt(gamesInput.value,10) };
+  }
+  function checkFormat(){
+    var f=currentFormat();
+    var err=validateFormat(f.n,f.k);
+    if(err){ fmtMsg.className="fmt-msg bad"; fmtMsg.textContent="✗ "+err; return false; }
+    fmtMsg.className="fmt-msg good";
+    fmtMsg.textContent="✓ "+f.n+" players × "+f.k+" games each → "+(f.n*f.k/2)+" league matches, top "+
+      (f.n>=4?"4 advance to the semi-finals.":"2 meet in the final.");
+    return true;
+  }
+
+  /* players */
+  var pcard = editMode ? card : el("div",{class:"card"});
+  if(!editMode) pcard.append(el("h2",{},"Players"));
+  pcard.append(el("div",{class:"legend"},
+    editMode ? "" :
+    "Slot numbers decide the fixtures, so either use the random draw (recommended) or agree on the order yourselves."));
+  var grid=el("div",{class:"setup-grid"});
+  pcard.append(grid);
   var err=el("div",{class:"error"});
-  card.append(err);
+  pcard.append(err);
+
+  var inputs=[];
+  function renderNameGrid(){
+    var n = editMode ? state.names.length : (parseInt(countInput.value,10)||0);
+    n=Math.max(0,Math.min(MAX_PLAYERS,n));
+    grid.innerHTML=""; inputs=[];
+    for(var i=0;i<n;i++){
+      (function(i){
+        var inp=el("input",{type:"text",maxlength:"20",placeholder:"Player "+(i+1),
+          oninput:function(){ nameValues[i]=inp.value; }});
+        inp.value = nameValues[i]||"";
+        inputs.push(inp);
+        grid.append(el("div",{},el("div",{class:"slot"},"SLOT "+(i+1)),inp));
+      })(i);
+    }
+  }
+
+  if(!editMode){
+    countInput.addEventListener("input",function(){ checkFormat(); renderNameGrid(); });
+    gamesInput.addEventListener("input",checkFormat);
+    checkFormat();
+  }
+  renderNameGrid();
 
   function readNames(){
+    if(!editMode && !checkFormat()){ err.textContent="Fix the format first."; return null; }
     var names=inputs.map(function(x){ return x.value.trim(); });
-    if(names.some(function(n){ return n===""; })){ err.textContent="All 9 names are required."; return null; }
-    var lower=names.map(function(n){ return n.toLowerCase(); });
-    if(new Set(lower).size!==9){ err.textContent="Names must be unique."; return null; }
+    if(names.some(function(nm){ return nm===""; })){ err.textContent="All names are required."; return null; }
+    var lower=names.map(function(nm){ return nm.toLowerCase(); });
+    if(new Set(lower).size!==names.length){ err.textContent="Names must be unique."; return null; }
     err.textContent="";
     return names;
   }
   function commit(names){
     if(editMode && state){ state.names=names; }
-    else { state=freshState(names); }
+    else { state=freshState(names,currentFormat().k); }
     saveState(); buildMain();
   }
   function shuffle(arr){
@@ -293,20 +396,27 @@ function showSetup(editMode){
   if(editMode){
     actions.append(el("button",{class:"btn ghost",onclick:buildMain},"Cancel"));
   }
-  card.append(actions);
+  pcard.append(actions);
+
   app.append(card);
+  if(!editMode) app.append(pcard);
 }
 
 /* ---------- main screen ---------- */
 function buildMain(){
   var app=$("#app"); app.innerHTML="";
+  var n=state.names.length;
+  $("#subtitle").textContent = n+" players · league phase of "+state.k+" games each · top "+qualCount()+
+    (qualCount()===4?" to the semi-finals":" to the final");
 
   var actions=el("div",{class:"actions"},
     el("button",{class:"btn ghost small",onclick:function(){ showSetup(true); }},"✏️ Edit names"),
     el("button",{class:"btn danger small",onclick:function(){
       if(confirm("Reset the whole tournament? All results will be lost.")){
         var s=getStore(); if(s) s.removeItem(KEY);
-        state=null; showSetup(false);
+        state=null;
+        $("#subtitle").textContent="Swiss-style league phase · knockouts · glory";
+        showSetup(false);
       }
     }},"Reset tournament")
   );
@@ -318,18 +428,19 @@ function buildMain(){
   var fx=el("div",{class:"card"});
   fx.append(el("h2",{},"League phase"));
   var mdgrid=el("div",{class:"mdgrid"});
-  for(var md=1;md<=6;md++){
+  var maxMd=state.fixtures.reduce(function(mx,f){ return Math.max(mx,f.md); },0);
+  for(var md=1;md<=maxMd;md++){
     var box=el("div",{class:"md"});
     box.append(el("h3",{},"Matchday "+md));
     var playing={};
-    FIXTURES.forEach(function(f,idx){
+    state.fixtures.forEach(function(f,idx){
       if(f.md!==md) return;
       playing[f.h]=1; playing[f.a]=1;
       box.append(matchRow(idx,f));
     });
     var resting=[];
-    for(var p=0;p<9;p++) if(!playing[p]) resting.push(state.names[p]);
-    box.append(el("div",{class:"rest"},"Resting: "+resting.join(", ")));
+    for(var p=0;p<n;p++) if(!playing[p]) resting.push(state.names[p]);
+    if(resting.length) box.append(el("div",{class:"rest"},"Resting: "+resting.join(", ")));
     mdgrid.append(box);
   }
   fx.append(mdgrid);
@@ -347,7 +458,9 @@ function buildMain(){
   );
   st.append(tbl);
   st.append(el("div",{class:"legend"},
-    "Top 4 advance to the semi-finals (1st vs 4th, 2nd vs 3rd). ",
+    qualCount()===4
+      ? "Top 4 advance to the semi-finals (1st vs 4th, 2nd vs 3rd). "
+      : "Top 2 meet in the final. ",
     "Tie-breakers: points → goal difference → goals scored → head-to-head."));
   layout.append(st);
   app.append(layout);
@@ -376,8 +489,9 @@ function matchRow(idx,f){
 function refreshStandings(){
   var tbody=$("#tbody"); if(!tbody) return;
   tbody.innerHTML="";
+  var q=qualCount();
   computeStandings().forEach(function(r,i){
-    var tr=el("tr",{class:i<4?"top4":""},
+    var tr=el("tr",{class:i<q?"top4":""},
       el("td",{},String(i+1)),
       el("td",{class:"pname"},r.name),
       el("td",{},String(r.p)),el("td",{},String(r.w)),el("td",{},String(r.d)),el("td",{},String(r.l)),
@@ -387,7 +501,7 @@ function refreshStandings(){
     tbody.append(tr);
   });
   var prog=$("#progress");
-  if(prog) prog.textContent = playedCount()+" / "+FIXTURES.length+" played";
+  if(prog) prog.textContent = playedCount()+" / "+state.fixtures.length+" played";
 }
 
 /* ---------- knockout ---------- */
@@ -398,13 +512,13 @@ function renderKO(){
 
   if(!leagueComplete()){
     box.append(el("div",{class:"locked"},
-      "🔒 Finish all league matches to unlock the knockout stage ("+playedCount()+" / "+FIXTURES.length+" played)."));
+      "🔒 Finish all league matches to unlock the knockout stage ("+playedCount()+" / "+state.fixtures.length+" played)."));
     return;
   }
 
   var seeds=computeStandings().map(function(r){ return r.id; });
-  var sf1={home:seeds[0],away:seeds[3]};
-  var sf2={home:seeds[1],away:seeds[2]};
+  var grid=el("div",{class:"ko-grid"});
+  var finalPair, champ;
 
   function winnerOf(key,pair){
     if(pair.home==null||pair.away==null) return null;
@@ -417,17 +531,22 @@ function renderKO(){
     return side ? (side==="h"?pair.away:pair.home) : null;
   }
 
-  var grid=el("div",{class:"ko-grid"});
-  grid.append(koCard("sf1","Semi-final 1",sf1,{hs:"1",as:"4"}));
-  grid.append(koCard("sf2","Semi-final 2",sf2,{hs:"2",as:"3"}));
-
-  var finalPair={home:winnerOf("sf1",sf1),away:winnerOf("sf2",sf2)};
-  var thirdPair={home:loserOf("sf1",sf1),away:loserOf("sf2",sf2)};
-  grid.append(koCard("final","🏆 Final",finalPair,null,"Winner SF1","Winner SF2"));
-  grid.append(koCard("third","3rd place (optional)",thirdPair,null,"Loser SF1","Loser SF2"));
+  if(qualCount()===4){
+    var sf1={home:seeds[0],away:seeds[3]};
+    var sf2={home:seeds[1],away:seeds[2]};
+    grid.append(koCard("sf1","Semi-final 1",sf1,{hs:"1",as:"4"}));
+    grid.append(koCard("sf2","Semi-final 2",sf2,{hs:"2",as:"3"}));
+    finalPair={home:winnerOf("sf1",sf1),away:winnerOf("sf2",sf2)};
+    var thirdPair={home:loserOf("sf1",sf1),away:loserOf("sf2",sf2)};
+    grid.append(koCard("final","🏆 Final",finalPair,null,"Winner SF1","Winner SF2"));
+    grid.append(koCard("third","3rd place (optional)",thirdPair,null,"Loser SF1","Loser SF2"));
+  } else {
+    finalPair={home:seeds[0],away:seeds[1]};
+    grid.append(koCard("final","🏆 Final",finalPair,{hs:"1",as:"2"}));
+  }
   box.append(grid);
 
-  var champ=winnerOf("final",finalPair);
+  champ=winnerOf("final",finalPair);
   if(champ!=null){
     box.append(el("div",{class:"champion"},"🏆 "+state.names[champ]+" is the champion! 🏆"));
   }
