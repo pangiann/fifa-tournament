@@ -299,7 +299,7 @@ var session=null;    // {token, playerId, name} for this device
 var ws=null, wsTimer=null, wsPing=null, wsDown=false;
 var drawError=null;  // last draw rejection, shown in lobby
 var removedNotice=false; // this device's player was removed by the host
-var filterText="", onlyMine=false;
+var filterText="", onlyMine=false, onlyUnplayed=false;
 var landingError={create:"",join:""};
 
 function setT(t){
@@ -599,17 +599,27 @@ function renderTournament(app){
   if(session){
     bar.append(el("span",{class:"chip toggle"+(onlyMine?" on":""),onclick:function(){ onlyMine=!onlyMine; render(); }},"My games"));
   }
+  bar.append(el("span",{class:"chip toggle"+(onlyUnplayed?" on":""),onclick:function(){ onlyUnplayed=!onlyUnplayed; render(); }},"Unplayed"));
   fx.append(bar);
   var listBox=el("div",{class:"scrollbox"});
   var ft=filterText.trim().toLowerCase();
+  var shown=0;
+  var active=document.activeElement;
+  var editing=active&&active.getAttribute?active.getAttribute("data-fkey"):null;
   T.fixtures.forEach(function(f,i){
     if(onlyMine&&session&&f.h!==session.playerId&&f.a!==session.playerId) return;
+    if(onlyUnplayed){
+      var r=T.results[i], beingEdited=editing==="L"+i+"h"||editing==="L"+i+"a";
+      if(r.h!=null&&r.a!=null&&!beingEdited) return;
+    }
     if(ft){
       var hn=pl(f.h).name.toLowerCase(),an=pl(f.a).name.toLowerCase();
       if(hn.indexOf(ft)<0&&an.indexOf(ft)<0) return;
     }
+    shown++;
     listBox.append(gameRow(i,f,canEdit));
   });
+  if(!shown) listBox.append(el("div",{class:"locked"},onlyUnplayed&&!ft&&!onlyMine?"🎉 All games played!":"No games match this filter."));
   fx.append(listBox);
   if(T.exempt!=null){
     fx.append(el("div",{class:"legend"},"° "+pl(T.exempt).name+" plays one game fewer (odd draw) — the table ranks by points per game."));
