@@ -1,13 +1,16 @@
 {
   "name": "fifa-tournament",
-  "main": "src/worker.js",
+  "main": "server/worker.js",
   "compatibility_date": "2026-05-03",
   "assets": {
     "directory": ".",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
   },
   "durable_objects": {
-    "bindings": [{ "name": "TOURNAMENT", "class_name": "Tournament" }]
+    "bindings": [{ "name": "TOURNAMENT", "class_name": "TournamentRoom" }],
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Tournament"] }]
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Tournament"] },
+    { "tag": "v2", "renamed_classes": [{ "from": "Tournament", "to": "TournamentRoom" }] },
+  ],
 }
