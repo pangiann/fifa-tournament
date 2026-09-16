@@ -1,0 +1,37 @@
+/* Design tokens. Change a value here and every component follows. */
+:root {
+  --color-background-start: #04071f;
+  --color-background-end: #0a1547;
+  --color-surface: rgba(255, 255, 255, 0.045);
+  --color-surface-raised: rgba(255, 255, 255, 0.07);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-text: #eef1ff;
+  --color-text-muted: #93a0c9;
+  --color-accent: #4f8cff;
+  --color-accent-bright: #6ee7ff;
+  --color-success: #38d996;
+  --color-gold: #ffd166;
+  --color-danger: #ff6b81;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 18px;
+  --space-xl: 26px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  --font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 15px;
+  --font-size-title: 30px;
+
+  --control-height: 42px;
+  --score-input-width: 44px;
+}

@@ -1,0 +1,118 @@
+/* Page structure: background, header, the two-column tournament grid, cards. */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  color: var(--color-text);
+  min-height: 100vh;
+  padding: var(--space-xl) 16px 90px;
+  background:
+    radial-gradient(1100px 550px at 75% -10%, #1a2a6e 0%, transparent 60%),
+    radial-gradient(800px 500px at -10% 30%, #12205c 0%, transparent 55%),
+    linear-gradient(180deg, var(--color-background-start), var(--color-background-end));
+  background-attachment: fixed;
+}
+
+.page {
+  max-width: 1150px;
+  margin: 0 auto;
+}
+
+.page__stars {
+  letter-spacing: 6px;
+  color: var(--color-accent-bright);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-xs);
+}
+
+.page__title {
+  margin: 0;
+  font-size: var(--font-size-title);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  font-weight: 800;
+  background: linear-gradient(90deg, #fff, var(--color-accent-bright));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.page__tagline {
+  color: var(--color-text-muted);
+  margin: 6px 0 22px;
+  font-size: var(--font-size-md);
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  backdrop-filter: blur(4px);
+  min-width: 0;
+}
+
+.card h2 {
+  margin: 0 0 var(--space-md);
+  font-size: var(--font-size-lg);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-accent-bright);
+}
+
+.card + .card,
+.tournament-grid + .card,
+.top-bar + .card {
+  margin-top: var(--space-lg);
+}
+
+.landing {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-lg);
+}
+
+/* League games on the left, standings on the right. */
+.tournament-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 470px);
+  gap: var(--space-lg);
+  align-items: start;
+  margin-bottom: var(--space-lg);
+}
+
+.top-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: var(--space-sm);
+}
+
+.hint {
+  margin: 10px 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.scroll-box {
+  max-height: 520px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}

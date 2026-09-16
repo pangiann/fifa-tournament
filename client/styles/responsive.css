@@ -1,0 +1,55 @@
+/* Every breakpoint lives here so the responsive behaviour is easy to audit. */
+
+/* Tablets and below: single column. */
+@media (max-width: 900px) {
+  .tournament-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Phones: tighter spacing, fewer table columns. */
+@media (max-width: 600px) {
+  body {
+    padding: var(--space-lg) var(--space-md) 70px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  .page__title {
+    font-size: 24px;
+    letter-spacing: 3px;
+  }
+
+  .standings-table th,
+  .standings-table td {
+    padding: 6px var(--space-xs);
+    font-size: 13px;
+  }
+
+  .standings-table__record {
+    display: none;
+  }
+
+  .standings-table__player {
+    max-width: 110px;
+  }
+
+  .join-code {
+    font-size: 26px;
+    letter-spacing: 6px;
+  }
+}
+
+/* Very small phones: keep only the essentials visible. */
+@media (max-width: 380px) {
+  .seed-badge,
+  .standings-table__goals {
+    display: none;
+  }
+
+  .match-row__number {
+    width: 26px;
+  }
+}
