@@ -38,7 +38,7 @@ const workersGlobals = {
 
 export default [
   {
-    ignores: ["node_modules/", ".wrangler/", "legacy/"],
+    ignores: ["node_modules/", ".wrangler/"],
   },
   js.configs.recommended,
   prettier,

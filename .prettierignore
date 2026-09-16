@@ -1,4 +1,3 @@
 node_modules/
 .wrangler/
-legacy/
 package-lock.json
