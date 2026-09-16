@@ -15,6 +15,5 @@ export const RECONNECT_DELAY_MS = 2_000;
 
 export const JOIN_CODE_LENGTH = 6;
 export const MAX_NAME_LENGTH = 20;
-export const DEFAULT_GAMES_PER_PLAYER = 4;
 
 export const APP_TAGLINE = "Join with a code · league phase · knockouts · glory";

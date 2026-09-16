@@ -15,7 +15,7 @@ import { API_BASE_PATH } from "../config.js";
  */
 
 /**
- * @param {{ name: string, gamertag: string, gamesPerPlayer: number }} details
+ * @param {{ name: string, gamertag: string }} details
  * @returns {Promise<ApiResult>} On success, data holds code, playerId, and token.
  */
 export const createTournament = (details) => request("POST", API_BASE_PATH, details);

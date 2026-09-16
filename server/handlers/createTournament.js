@@ -3,10 +3,13 @@ import { fail, HttpStatus, parseName, parseNonNegativeInteger, succeed } from ".
 
 const HOST_PLAYER_ID = 0;
 const MAX_GAMES_PER_PLAYER = MAX_PLAYERS - 1;
+/** Starting value shown in the lobby; the host adjusts it before the draw. */
+export const DEFAULT_GAMES_PER_PLAYER = 4;
 
 /**
  * POST /api/tournaments — creates the room with the caller as host.
  * The worker has already allocated the join code and checked it is free.
+ * gamesPerPlayer is optional here; the host sets the final value at the draw.
  *
  * @param {import("./guards.js").HandlerContext} context
  * @returns {import("../http.js").HandlerOutcome}
@@ -19,7 +22,10 @@ export const createTournament = ({ tournament, body, room }) => {
   if (name === undefined) {
     return fail(HttpStatus.BAD_REQUEST, "NAME_REQUIRED", "Enter your name.");
   }
-  const gamesPerPlayer = parseNonNegativeInteger(body.gamesPerPlayer);
+  const gamesPerPlayer =
+    body.gamesPerPlayer === undefined
+      ? DEFAULT_GAMES_PER_PLAYER
+      : parseNonNegativeInteger(body.gamesPerPlayer);
   if (
     gamesPerPlayer === undefined ||
     gamesPerPlayer < MIN_GAMES_PER_PLAYER ||

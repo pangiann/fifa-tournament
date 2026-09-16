@@ -3,9 +3,9 @@
  */
 
 import { createTournament, joinTournament } from "../api/tournamentApi.js";
-import { DEFAULT_GAMES_PER_PLAYER, JOIN_CODE_LENGTH } from "../config.js";
+import { JOIN_CODE_LENGTH } from "../config.js";
 import { loadSession, saveSession, wasRemovedByHost } from "../state/session.js";
-import { button, card, errorText, field, numberInput, textInput } from "../ui/components.js";
+import { button, card, errorText, field, textInput } from "../ui/components.js";
 import { createElement } from "../ui/dom.js";
 import { navigateToTournament } from "../navigation.js";
 
@@ -16,14 +16,12 @@ export const renderLandingView = () =>
 const renderCreateCard = () => {
   const nameInput = textInput({ placeholder: "Your name" });
   const gamertagInput = textInput({ placeholder: "PSN / Xbox gamertag (optional)" });
-  const gamesInput = numberInput({ value: DEFAULT_GAMES_PER_PLAYER, min: 1 });
   const error = errorText();
 
   const submit = async () => {
     const result = await createTournament({
       name: nameInput.value,
       gamertag: gamertagInput.value,
-      gamesPerPlayer: Number.parseInt(gamesInput.value, 10),
     });
     if (!result.ok) {
       error.textContent = result.message ?? "Could not create the tournament.";
@@ -38,7 +36,11 @@ const renderCreateCard = () => {
     "Create a tournament",
     field("Your name", nameInput),
     field("Gamertag", gamertagInput),
-    field("Games per player (changeable until the draw)", gamesInput),
+    createElement(
+      "p",
+      { className: "hint" },
+      "You'll get a code to share. Set the games per player in the lobby, once you see how many are in.",
+    ),
     createElement(
       "div",
       { className: "actions" },

@@ -1,7 +1,10 @@
 import { beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import { createTournament } from "../../server/handlers/createTournament.js";
+import {
+  createTournament,
+  DEFAULT_GAMES_PER_PLAYER,
+} from "../../server/handlers/createTournament.js";
 import { joinTournament } from "../../server/handlers/joinTournament.js";
 import { leaveTournament, removePlayer } from "../../server/handlers/lobbyMembership.js";
 import { recordKnockoutResult, recordLeagueResult } from "../../server/handlers/recordResults.js";
@@ -61,6 +64,12 @@ describe("createTournament", () => {
     assert.match(outcome.body.token, /^[0-9a-f-]{36}$/);
     assert.equal(room.tournament.phase, "lobby");
     assert.equal(room.tournament.players[0].gamertag, "host-gt");
+  });
+
+  it("defaults games per player when the request omits it", () => {
+    const outcome = room.call(createTournament, { code: "ABC234", name: "Host" });
+    assert.equal(outcome.status, HttpStatus.OK);
+    assert.equal(room.tournament.gamesPerPlayer, DEFAULT_GAMES_PER_PLAYER);
   });
 
   it("rejects a missing name or an out-of-range games count", () => {
