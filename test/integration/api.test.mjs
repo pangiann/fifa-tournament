@@ -6,7 +6,9 @@
 import { after, before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { rm } from "node:fs/promises";
+import { mkdtemp } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 
@@ -50,12 +52,14 @@ const waitForServer = async () => {
 };
 
 before(async () => {
-  await rm(".wrangler/state", { recursive: true, force: true });
-  /* Run wrangler with the Node executing this test (the project's pinned version). */
-  server = spawn(process.execPath, [fileURLToPath(WRANGLER_BIN), "dev", "--port", String(PORT)], {
-    stdio: ["ignore", "pipe", "pipe"],
-    detached: true,
-  });
+  /* Keep local state outside the project: wrangler watches the project tree for
+     changes, and writing inside it while wrangler starts can trigger a reload loop. */
+  const stateDirectory = await mkdtemp(join(tmpdir(), "champions-night-test-"));
+  server = spawn(
+    process.execPath,
+    [fileURLToPath(WRANGLER_BIN), "dev", "--port", String(PORT), "--persist-to", stateDirectory],
+    { stdio: ["ignore", "pipe", "pipe"], detached: true },
+  );
   const capture = (chunk) => {
     serverOutput += chunk.toString();
   };
@@ -71,6 +75,20 @@ after(() => {
 });
 
 describe("tournament API", () => {
+  it("serves the app shell and its modules", async () => {
+    const home = await fetch(`${BASE_URL}/`);
+    assert.equal(home.status, 200);
+    assert.match(await home.text(), /Champions Night/);
+    for (const path of ["/client/main.js", "/shared/bracket.js", "/client/styles/tokens.css"]) {
+      assert.equal((await fetch(`${BASE_URL}${path}`)).status, 200, path);
+    }
+    assert.equal(
+      (await fetch(`${BASE_URL}/server/worker.js`)).status,
+      404,
+      "server code is not served",
+    );
+  });
+
   it("rejects unknown codes and endpoints", async () => {
     assert.equal((await getState("ZZZZZ9")).status, 404);
     assert.equal((await fetch(`${BASE_URL}/api/nothing`)).status, 404);
